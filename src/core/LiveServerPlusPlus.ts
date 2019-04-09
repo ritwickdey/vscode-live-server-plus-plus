@@ -22,11 +22,19 @@ export class LiveServerPlusPlus {
   async goLive() {
     await this.listenServer();
     console.log('Server is created');
+    this.registerOnChangeReload();
+  }
+
+  private registerOnChangeReload() {
+    let timeout: NodeJS.Timeout;
     vscode.workspace.onDidChangeTextDocument(event => {
-      this.broadcastWs({
-        fileName: event.document.fileName,
-        text: event.document.getText()
-      });
+      //debounce 600ms
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        this.broadcastWs({
+          fileName: event.document.fileName
+        });
+      }, 600);
     });
   }
 
@@ -42,12 +50,7 @@ export class LiveServerPlusPlus {
   private broadcastWs(data: any, action = 'reload') {
     this.ws.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(
-          JSON.stringify({
-            data,
-            action
-          })
-        );
+        client.send(JSON.stringify({ data, action }));
       }
     });
   }
