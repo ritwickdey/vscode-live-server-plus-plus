@@ -13,10 +13,9 @@ export class LiveServerPlusPlus {
   ws: WebSocket.Server;
 
   constructor() {
-    this.server = http.createServer(this.routesHandler);
+    this.server = http.createServer(this.routesHandler.bind(this));
     this.ws = new WebSocket.Server({ noServer: true });
     this.workspace = new WorkspaceUtils();
-    this.routesHandler = this.routesHandler.bind(this);
   }
 
   async goLive() {
@@ -57,7 +56,7 @@ export class LiveServerPlusPlus {
 
   private listenWs() {
     this.ws.on('connection', ws => {
-      ws.send('Connected!');
+      ws.send(JSON.stringify({ action: 'Connected!' }));
     });
 
     this.ws.on('close', () => {
