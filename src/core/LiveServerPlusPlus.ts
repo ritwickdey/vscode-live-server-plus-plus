@@ -7,29 +7,74 @@ import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
 import { readFileStream } from './FileSystem';
 import { INJECTED_TEXT, isInjectableFile } from './utils';
+import {
+  ILiveServerPlusPlus,
+  GoOfflineEvent,
+  GoLiveEvent,
+  ServerStartError,
+  ServerStopError
+} from './types/ILiveServerPlusPlus';
+import { AddressInfo } from 'net';
+import { Message } from '../extension/message';
 
-export class LiveServerPlusPlus {
+export class LiveServerPlusPlus implements ILiveServerPlusPlus {
+  port: number;
   private workspace: WorkspaceUtils;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
-  private port: number;
   private debounceTimeout: number;
+  private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
+  private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
+  private serverStopErrorEvent: vscode.EventEmitter<ServerStopError>;
+  private serverStartErrorEvent: vscode.EventEmitter<ServerStartError>;
 
   constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
     this.workspace = new WorkspaceUtils(subpath);
     this.port = port;
     this.debounceTimeout = debounceTimeout;
+    this.goLiveEvent = new vscode.EventEmitter();
+    this.goOfflineEvent = new vscode.EventEmitter();
+
+    this.serverStartErrorEvent = new vscode.EventEmitter();
+    this.serverStopErrorEvent = new vscode.EventEmitter();
+
+    this.registerSetup();
+  }
+
+  get onDidGoLive() {
+    return this.goLiveEvent.event;
+  }
+
+  get onDidGoOffline() {
+    return this.goOfflineEvent.event;
+  }
+
+  get onServerStartError() {
+    return this.serverStartErrorEvent.event;
+  }
+
+  get onServerStopError() {
+    return this.serverStopErrorEvent.event;
   }
 
   async goLive() {
     await this.listenServer();
-    console.log('Server is created');
     this.registerOnChangeReload();
+    this.goLiveEvent.fire({
+      pathUri: '/',
+      port: (this.server!.address() as AddressInfo).port
+    });
   }
 
   async shutdown() {
     await this.closeWs();
     await this.closeServer();
+    this.goOfflineEvent.fire({ port: this.port });
+  }
+
+  registerSetup() {
+    const message = new Message(this);
+    message.init();
   }
 
   private registerOnChangeReload() {
