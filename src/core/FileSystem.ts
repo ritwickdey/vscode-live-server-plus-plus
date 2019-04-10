@@ -7,18 +7,12 @@ import { SUPPORTED_FILES } from './utils/index';
 
 // Stream version
 export const readFileStream = (filePath: string, encoding = 'utf8') => {
-  const fileExt = path.extname(filePath).toLowerCase();
-  const file = vscode.workspace.textDocuments.find(
-    doc =>
-      doc.isDirty &&
-      doc.fileName === filePath &&
-      SUPPORTED_FILES.includes(fileExt)
-  );
+  const dirtyFile = getDirtyFileFromVscode(filePath);
 
-  if (file) {
+  if (dirtyFile) {
     console.log('[Stream]Reading Dirty file:', filePath);
     const stream = new Readable({ encoding });
-    stream.push(file.getText());
+    stream.push(dirtyFile.getText());
     stream.push(null);
     return stream;
   }
@@ -27,19 +21,13 @@ export const readFileStream = (filePath: string, encoding = 'utf8') => {
   return fs.createReadStream(filePath, { encoding });
 };
 
-// Promise version
+// Promise version -- Most probably will not be used.
 export const readFile = (filePath: string): Promise<Buffer> => {
-  const fileExt = path.extname(filePath).toLowerCase();
-  const file = vscode.workspace.textDocuments.find(
-    doc =>
-      doc.isDirty &&
-      doc.fileName === filePath &&
-      SUPPORTED_FILES.includes(path.extname(fileExt))
-  );
+  const dirtyFile = getDirtyFileFromVscode(filePath);
 
-  if (file) {
+  if (dirtyFile) {
     console.log('[Promise]Reading Dirty file: ', filePath);
-    return readFileFromVscodeWorkspace(file);
+    return readFileFromVscodeWorkspace(dirtyFile);
   }
 
   console.log('[Promise]Reading file from disk: ', filePath);
@@ -74,4 +62,16 @@ const readFileFromFileSystem = (filePath: string) => {
       return resolve(data);
     });
   });
+};
+
+// Private Utils
+
+const getDirtyFileFromVscode = (filePath: string) => {
+  const fileExt = path.extname(filePath).toLowerCase();
+  return vscode.workspace.textDocuments.find(
+    doc =>
+      doc.isDirty &&
+      doc.fileName === filePath &&
+      SUPPORTED_FILES.includes(path.extname(fileExt))
+  );
 };
