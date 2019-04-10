@@ -1,18 +1,48 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
+import { Readable } from 'stream';
 import { Buffer } from 'buffer';
+import { SUPPORTED_FILES } from './utils/index';
 
-export const readFile = (filePath: string): Promise<Buffer> => {
-  const file = vscode.workspace.textDocuments.find(e => {
-    return e.isDirty && e.fileName === filePath;
-  });
+// Stream version
+export const readFileStream = (filePath: string, encoding = 'utf8') => {
+  const fileExt = path.extname(filePath).toLowerCase();
+  const file = vscode.workspace.textDocuments.find(
+    doc =>
+      doc.isDirty &&
+      doc.fileName === filePath &&
+      SUPPORTED_FILES.includes(fileExt)
+  );
 
   if (file) {
-    console.log('Reading Dirty file: ', filePath);
+    console.log('[Stream]Reading Dirty file:', filePath);
+    const stream = new Readable({ encoding });
+    stream.push(file.getText());
+    stream.push(null);
+    return stream;
+  }
+
+  console.log('[Stream]Reading file from disk: ', filePath);
+  return fs.createReadStream(filePath, { encoding });
+};
+
+// Promise version
+export const readFile = (filePath: string): Promise<Buffer> => {
+  const fileExt = path.extname(filePath).toLowerCase();
+  const file = vscode.workspace.textDocuments.find(
+    doc =>
+      doc.isDirty &&
+      doc.fileName === filePath &&
+      SUPPORTED_FILES.includes(path.extname(fileExt))
+  );
+
+  if (file) {
+    console.log('[Promise]Reading Dirty file: ', filePath);
     return readFileFromVscodeWorkspace(file);
   }
 
-  console.log('Reading file from disk: ', filePath);
+  console.log('[Promise]Reading file from disk: ', filePath);
   return readFileFromFileSystem(filePath);
 };
 

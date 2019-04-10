@@ -4,7 +4,7 @@ import * as WebSocket from 'ws';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
-import { readFile } from './FileSystem';
+import { readFile, readFileStream } from './FileSystem';
 import { URL } from 'url';
 
 export class LiveServerPlusPlus {
@@ -81,14 +81,16 @@ export class LiveServerPlusPlus {
       res.end('Root Path is missing');
     }
     const filePath = path.join(cwd!, reqUrl);
-    try {
-      const fileData = await readFile(filePath);
-      res.end(fileData);
-    } catch (err) {
+
+    const fileDataStream = readFileStream(filePath);
+    
+    fileDataStream.pipe(res);
+    
+    fileDataStream.on('error', err => {
       console.error('ERROR ', err);
       res.statusCode = err.code === 'ENOENT' ? 404 : 500;
       return res.end();
-    }
+    });
   }
 
   private getReqFileUrl(req: IncomingMessage): string {
