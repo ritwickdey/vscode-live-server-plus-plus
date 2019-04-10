@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
 import * as WebSocket from 'ws';
-import { Transform } from 'stream';
+import * as url from 'url';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
@@ -35,9 +35,14 @@ export class LiveServerPlusPlus {
       //debouncing
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        this.broadcastWs({
-          fileName: event.document.fileName
-        });
+        const fileName = event.document.fileName;
+        const filePathFromRoot = fileName.replace(this.workspace.cwd!, '');
+        this.broadcastWs(
+          {
+            fileName: filePathFromRoot
+          },
+          path.extname(fileName) === '.css' ? 'refreshcss' : 'reload'
+        );
       }, this.debounceTimeout);
     });
   }
@@ -61,7 +66,7 @@ export class LiveServerPlusPlus {
 
   private listenWs() {
     this.ws.on('connection', ws => {
-      ws.send(JSON.stringify({ action: 'Connected!' }));
+      ws.send(JSON.stringify({ action: 'connected' }));
     });
 
     this.ws.on('close', () => {
@@ -103,14 +108,11 @@ export class LiveServerPlusPlus {
   }
 
   private getReqFileUrl(req: IncomingMessage): string {
-    if (!req.url) {
-      return req.url + '/index.html';
-    }
+    const { pathname } = url.parse(req.url || '/');
 
-    if (req.url.endsWith('/')) {
-      return req.url + 'index.html';
+    if (!pathname || pathname === '/') {
+      return '/index.html';
     }
-
-    return req.url;
+    return pathname;
   }
 }

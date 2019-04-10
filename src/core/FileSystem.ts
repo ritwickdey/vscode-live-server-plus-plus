@@ -1,9 +1,8 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
 import { Readable } from 'stream';
 import { Buffer } from 'buffer';
-import { SUPPORTED_FILES, isSupportedFile } from './utils/index';
+import { isSupportedFile } from './utils/index';
 
 // Stream version
 export const readFileStream = (filePath: string, encoding = 'utf8') => {
@@ -67,7 +66,6 @@ const readFileFromFileSystem = (filePath: string) => {
 // Private Utils
 
 const getDirtyFileFromVscode = (filePath: string) => {
-  const fileExt = path.extname(filePath).toLowerCase();
   return vscode.workspace.textDocuments.find(
     doc => doc.isDirty && doc.fileName === filePath && isSupportedFile(filePath)
   );
