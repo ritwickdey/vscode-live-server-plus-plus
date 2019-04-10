@@ -10,14 +10,12 @@ import { INJECTED_TEXT, isInjectableFile } from './utils';
 
 export class LiveServerPlusPlus {
   private workspace: WorkspaceUtils;
-  private server: http.Server;
-  private ws: WebSocket.Server;
+  private server: http.Server | undefined;
+  private ws: WebSocket.Server | undefined;
   private port: number;
   private debounceTimeout: number;
 
   constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
-    this.server = http.createServer(this.routesHandler.bind(this));
-    this.ws = new WebSocket.Server({ noServer: true });
     this.workspace = new WorkspaceUtils(subpath);
     this.port = port;
     this.debounceTimeout = debounceTimeout;
@@ -27,6 +25,11 @@ export class LiveServerPlusPlus {
     await this.listenServer();
     console.log('Server is created');
     this.registerOnChangeReload();
+  }
+
+  async shutdown() {
+    await this.closeWs();
+    await this.closeServer();
   }
 
   private registerOnChangeReload() {
@@ -49,14 +52,30 @@ export class LiveServerPlusPlus {
 
   private listenServer() {
     return new Promise(resolve => {
-      this.listenWs();
+      this.server = http.createServer(this.routesHandler.bind(this));
+      this.attachWSListeners();
       this.server.listen(this.port, () => {
         resolve();
       });
     });
   }
 
+  private closeServer() {
+    return new Promise((resolve, reject) => {
+      this.server!.close(err => (err ? reject(err) : resolve()));
+    });
+  }
+
+  private closeWs() {
+    return new Promise((resolve, reject) => {
+      if (!this.ws) return resolve();
+      this.ws.close(err => (err ? reject(err) : resolve()));
+    });
+  }
+
   private broadcastWs(data: any, action = 'reload') {
+    if (!this.ws) return;
+
     this.ws.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ data, action }));
@@ -64,7 +83,11 @@ export class LiveServerPlusPlus {
     });
   }
 
-  private listenWs() {
+  private attachWSListeners() {
+    if (!this.server) return;
+
+    this.ws = new WebSocket.Server({ noServer: true });
+
     this.ws.on('connection', ws => {
       ws.send(JSON.stringify({ action: 'connected' }));
     });
@@ -75,8 +98,8 @@ export class LiveServerPlusPlus {
 
     this.server.on('upgrade', (request, socket, head) => {
       if (request.url === '/_ws') {
-        this.ws.handleUpgrade(request, socket, head, ws => {
-          this.ws.emit('connection', ws, request);
+        this.ws!.handleUpgrade(request, socket, head, ws => {
+          this.ws!.emit('connection', ws, request);
         });
       } else {
         socket.destroy();

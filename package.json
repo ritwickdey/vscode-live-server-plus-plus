@@ -10,14 +10,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.live-server-plus-plus.open"
+		"onCommand:extension.live-server-plus-plus.open",
+		"onCommand:extension.live-server-plus-plus.close"
 	],
-	"main": "./out/extension.js",
+	"main": "./out/extension/index.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "extension.live-server-plus-plus.open",
-				"title": "Live Server++ : Open"
+				"title": "Live Server++ : Open Server"
+			},
+			{
+				"command": "extension.live-server-plus-plus.close",
+				"title": "Live Server++ : Close Server"
 			}
 		]
 	},
