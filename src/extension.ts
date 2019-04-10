@@ -3,8 +3,8 @@ import { LiveServerPlusPlus } from './core/LiveServerPlusPlus';
 
 export function activate(context: vscode.ExtensionContext) {
   const liveServerPlusPlus = new LiveServerPlusPlus();
- 
-  let disposable = vscode.commands.registerCommand(
+
+  const disposable = vscode.commands.registerCommand(
     'extension.live-server-plus-plus.open',
     () => {
       liveServerPlusPlus.goLive();

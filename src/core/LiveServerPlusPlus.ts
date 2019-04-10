@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
 import * as WebSocket from 'ws';
+import { Transform } from 'stream';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
 import { readFileStream } from './FileSystem';
+import { INJECTED_TEXT, isInjectableFile } from './utils';
 
 export class LiveServerPlusPlus {
   private workspace: WorkspaceUtils;
@@ -13,7 +15,7 @@ export class LiveServerPlusPlus {
   private port: number;
   private debounceTimeout: number;
 
-  constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } =  {}) {
+  constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
     this.server = http.createServer(this.routesHandler.bind(this));
     this.ws = new WebSocket.Server({ noServer: true });
     this.workspace = new WorkspaceUtils(subpath);
@@ -77,7 +79,7 @@ export class LiveServerPlusPlus {
     });
   }
 
-  private async routesHandler(req: IncomingMessage, res: ServerResponse) {
+  private routesHandler(req: IncomingMessage, res: ServerResponse) {
     const reqUrl = this.getReqFileUrl(req);
     const cwd = this.workspace.cwd;
     if (!cwd) {
@@ -85,14 +87,18 @@ export class LiveServerPlusPlus {
     }
     const filePath = path.join(cwd!, reqUrl);
 
-    const fileDataStream = readFileStream(filePath);
+    const fileStream = readFileStream(filePath);
 
-    fileDataStream.pipe(res);
+    fileStream
+      .on('end', () =>
+        res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null)
+      )
+      .pipe(res);
 
-    fileDataStream.on('error', err => {
+    fileStream.on('error', err => {
       console.error('ERROR ', err);
       res.statusCode = err.code === 'ENOENT' ? 404 : 500;
-      return res.end();
+      return res.end(null);
     });
   }
 
