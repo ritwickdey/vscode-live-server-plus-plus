@@ -4,18 +4,21 @@ import * as WebSocket from 'ws';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
-import { readFile, readFileStream } from './FileSystem';
-import { URL } from 'url';
+import { readFileStream } from './FileSystem';
 
 export class LiveServerPlusPlus {
-  workspace: WorkspaceUtils;
-  server: http.Server;
-  ws: WebSocket.Server;
+  private workspace: WorkspaceUtils;
+  private server: http.Server;
+  private ws: WebSocket.Server;
+  private port: number;
+  private debounceTimeout: number;
 
-  constructor() {
+  constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } =  {}) {
     this.server = http.createServer(this.routesHandler.bind(this));
     this.ws = new WebSocket.Server({ noServer: true });
-    this.workspace = new WorkspaceUtils();
+    this.workspace = new WorkspaceUtils(subpath);
+    this.port = port;
+    this.debounceTimeout = debounceTimeout;
   }
 
   async goLive() {
@@ -27,20 +30,20 @@ export class LiveServerPlusPlus {
   private registerOnChangeReload() {
     let timeout: NodeJS.Timeout;
     vscode.workspace.onDidChangeTextDocument(event => {
-      //debounce 600ms
+      //debouncing
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         this.broadcastWs({
           fileName: event.document.fileName
         });
-      }, 600);
+      }, this.debounceTimeout);
     });
   }
 
   private listenServer() {
     return new Promise(resolve => {
       this.listenWs();
-      this.server.listen(9000, () => {
+      this.server.listen(this.port, () => {
         resolve();
       });
     });
@@ -83,9 +86,9 @@ export class LiveServerPlusPlus {
     const filePath = path.join(cwd!, reqUrl);
 
     const fileDataStream = readFileStream(filePath);
-    
+
     fileDataStream.pipe(res);
-    
+
     fileDataStream.on('error', err => {
       console.error('ERROR ', err);
       res.statusCode = err.code === 'ENOENT' ? 404 : 500;

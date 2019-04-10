@@ -72,6 +72,6 @@ const getDirtyFileFromVscode = (filePath: string) => {
     doc =>
       doc.isDirty &&
       doc.fileName === filePath &&
-      SUPPORTED_FILES.includes(path.extname(fileExt))
+      SUPPORTED_FILES.includes(fileExt)
   );
 };

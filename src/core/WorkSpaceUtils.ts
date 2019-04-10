@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export class WorkspaceUtils {
+  constructor(private subpath = '/') {}
+
   get activeWorkspace() {
     const workspaces = vscode.workspace.workspaceFolders;
     if (workspaces && workspaces.length) {
@@ -11,7 +14,7 @@ export class WorkspaceUtils {
   get cwd() {
     const workspace = this.activeWorkspace;
     if (workspace) {
-      return workspace.uri.fsPath;
+      return path.join(workspace.uri.fsPath, this.subpath);
     }
     return null;
   }
