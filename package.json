@@ -44,6 +44,7 @@
 		"vscode": "^1.1.28"
 	},
 	"dependencies": {
+		"mime-types": "^2.1.22",
 		"ws": "^6.2.1"
 	}
 }

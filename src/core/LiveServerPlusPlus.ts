@@ -7,15 +7,16 @@ import * as path from 'path';
 import { WorkspaceUtils } from './WorkSpaceUtils';
 import { readFileStream } from './FileSystem';
 import { INJECTED_TEXT, isInjectableFile } from './utils';
+import { AddressInfo } from 'net';
 import {
   ILiveServerPlusPlus,
   GoOfflineEvent,
   GoLiveEvent,
   ServerStartError,
-  ServerStopError
-} from './types/ILiveServerPlusPlus';
-import { AddressInfo } from 'net';
-import { Message } from '../extension/message';
+  ServerStopError,
+  MiddlewareTypes,
+  ILiveServerPlusPlusServiceCtor
+} from './types';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port: number;
@@ -27,6 +28,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverStopErrorEvent: vscode.EventEmitter<ServerStopError>;
   private serverStartErrorEvent: vscode.EventEmitter<ServerStartError>;
+  private middlewares: MiddlewareTypes[] = [];
 
   constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
     this.workspace = new WorkspaceUtils(subpath);
@@ -37,8 +39,6 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     this.serverStartErrorEvent = new vscode.EventEmitter();
     this.serverStopErrorEvent = new vscode.EventEmitter();
-
-    this.registerSetup();
   }
 
   get onDidGoLive() {
@@ -72,9 +72,15 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     this.goOfflineEvent.fire({ port: this.port });
   }
 
-  registerSetup() {
-    const message = new Message(this);
-    message.init();
+  useMiddleware(...fns: MiddlewareTypes[]) {
+    fns.forEach(fn => this.middlewares.push(fn));
+  }
+
+  useService(...fns: ILiveServerPlusPlusServiceCtor[]) {
+    fns.forEach(fn => {
+      const instance = new fn(this);
+      instance.init.call(instance);
+    });
   }
 
   private registerOnChangeReload() {
@@ -152,7 +158,14 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     });
   }
 
+  private applyMiddlware(req: IncomingMessage, res: ServerResponse) {
+    this.middlewares.forEach(middleware => {
+      middleware(req, res);
+    });
+  }
+
   private routesHandler(req: IncomingMessage, res: ServerResponse) {
+    this.applyMiddlware(req, res);
     const reqUrl = this.getReqFileUrl(req);
     const cwd = this.workspace.cwd;
     if (!cwd) {

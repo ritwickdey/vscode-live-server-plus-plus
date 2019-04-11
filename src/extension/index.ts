@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import { LiveServerPlusPlus } from '../core/LiveServerPlusPlus';
+import { NotificationService } from './services/NotificationService';
 
 export function activate(context: vscode.ExtensionContext) {
+  
   const liveServerPlusPlus = new LiveServerPlusPlus();
+  liveServerPlusPlus.useMiddleware();
+  liveServerPlusPlus.useService(NotificationService);
 
   const openServer = vscode.commands.registerCommand(
     'extension.live-server-plus-plus.open',

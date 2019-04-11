@@ -1,21 +1,17 @@
 import {
   ILiveServerPlusPlus,
   GoLiveEvent,
-  GoOfflineEvent
-} from '../core/types/ILiveServerPlusPlus';
+  GoOfflineEvent,
+  ILiveServerPlusPlusService
+} from '../../core/types/ILiveServerPlusPlus';
 import { window } from 'vscode';
 
-export class Message {
-  constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {
-      this.init = this.init.bind(this);
-      this.showLSPPOpened = this.showLSPPOpened.bind(this);
-      this.showLSPPClosed = this.showLSPPClosed.bind(this);
-      this.showPopUpMsg = this.showPopUpMsg.bind(this);
-  }
+export class NotificationService implements ILiveServerPlusPlusService {
+  constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {}
 
   init() {
-    this.liveServerPlusPlus.onDidGoLive(this.showLSPPOpened);
-    this.liveServerPlusPlus.onDidGoOffline(this.showLSPPClosed);
+    this.liveServerPlusPlus.onDidGoLive(this.showLSPPOpened.bind(this));
+    this.liveServerPlusPlus.onDidGoOffline(this.showLSPPClosed.bind(this));
   }
 
   private showLSPPOpened(event: GoLiveEvent) {
