@@ -4,7 +4,7 @@ import {
   GoOfflineEvent,
   ILiveServerPlusPlusService
 } from '../../core/types/ILiveServerPlusPlus';
-import { window } from 'vscode';
+import { showPopUpMsg } from '../utils/showPopUpMsg';
 
 export class NotificationService implements ILiveServerPlusPlusService {
   constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {}
@@ -15,24 +15,9 @@ export class NotificationService implements ILiveServerPlusPlusService {
   }
 
   private showLSPPOpened(event: GoLiveEvent) {
-    this.showPopUpMsg(`Server is started at ${event.port}`);
+    showPopUpMsg(`Server is started at ${event.port}`);
   }
   private showLSPPClosed(event: GoOfflineEvent) {
-    this.showPopUpMsg(`Server is closed`);
-  }
-
-  private showPopUpMsg(
-    msg: string,
-    { msgType = 'info' }: { msgType?: 'info' | 'error' | 'warn' } = {} as any
-  ) {
-    if (msgType === 'error') {
-      return window.showErrorMessage(msg);
-    }
-    if (msgType === 'info') {
-      return window.showInformationMessage(msg);
-    }
-    if (msgType === 'warn') {
-      return window.showWarningMessage(msg);
-    }
+    showPopUpMsg(`Server is closed`);
   }
 }

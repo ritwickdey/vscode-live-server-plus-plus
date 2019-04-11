@@ -1,30 +1,77 @@
 {
 	"name": "vscode-live-server-plus-plus",
 	"displayName": "vscode-live-server-plus-plus",
-	"description": "",
+	"description": "It's Truly Live",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
+	"author": {
+		"name": "Ritwick Dey",
+		"email": "ritwickdey@outlook.com",
+		"url": "https://ritwickdey.github.io"
+	},
 	"categories": [
 		"Other"
 	],
+	"preview": true,
+	"galleryBanner": {
+		"color": "#41205f",
+		"theme": "dark"
+	},
+	"bugs": {
+		"url": "https://github.com/ritwickdey/vscode-live-server-plus-plus/issues",
+		"email": "ritwickdey@outlook.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ritwickdey/vscode-live-server-plus-plus.git"
+	},
+	"homepage": "https://ritwickdey.github.io/vscode-live-server-plus-plus",
 	"activationEvents": [
-		"onCommand:extension.live-server-plus-plus.open",
-		"onCommand:extension.live-server-plus-plus.close"
+		"onCommand:extension.live-server++.open",
+		"onCommand:extension.live-server++.close"
 	],
 	"main": "./out/extension/index.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.live-server-plus-plus.open",
+				"command": "extension.live-server++.open",
 				"title": "Live Server++ : Open Server"
 			},
 			{
-				"command": "extension.live-server-plus-plus.close",
+				"command": "extension.live-server++.close",
 				"title": "Live Server++ : Close Server"
 			}
 		]
+	},
+	"liveServer++.port": {
+		"type": "number",
+		"default": 6000,
+		"minimum": 0,
+		"maximum": 65535,
+		"description": "Use 0 for random port."
+	},
+	"liveServer++.browser": {
+		"type": [
+			"string",
+			"null"
+		],
+		"default": "default",
+		"enum": [
+			"default",
+			"chrome",
+			"firefox",
+			"microsoft-edge",
+			null
+		],
+		"description": "Set your favorite browser"
+	},
+	"liveServer.settings.root": {
+		"type": "string",
+		"default": "/",
+		"pattern": "/|/[^\\/]",
+		"description": "Change root of Live Server.\nE.g.: /subfolder1/subfolder2"
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -37,6 +84,7 @@
 	"devDependencies": {
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
+		"@types/open": "^6.1.0",
 		"@types/ws": "^6.0.1",
 		"copyfiles": "^2.1.0",
 		"tslint": "^5.12.1",
@@ -45,6 +93,7 @@
 	},
 	"dependencies": {
 		"mime-types": "^2.1.22",
+		"open": "^6.1.0",
 		"ws": "^6.2.1"
 	}
 }

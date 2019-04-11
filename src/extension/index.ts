@@ -3,27 +3,25 @@ import { LiveServerPlusPlus } from '../core/LiveServerPlusPlus';
 import { NotificationService } from './services/NotificationService';
 
 export function activate(context: vscode.ExtensionContext) {
-  
   const liveServerPlusPlus = new LiveServerPlusPlus();
+
   liveServerPlusPlus.useMiddleware();
   liveServerPlusPlus.useService(NotificationService);
 
-  const openServer = vscode.commands.registerCommand(
-    'extension.live-server-plus-plus.open',
-    () => {
-      liveServerPlusPlus.goLive();
-    }
-  );
+  const openServer = vscode.commands.registerCommand(withPrefix('open'), () => {
+    liveServerPlusPlus.goLive();
+  });
 
-  const closeServer = vscode.commands.registerCommand(
-    'extension.live-server-plus-plus.close',
-    () => {
-      liveServerPlusPlus.shutdown();
-    }
-  );
+  const closeServer = vscode.commands.registerCommand(withPrefix('close'), () => {
+    liveServerPlusPlus.shutdown();
+  });
 
   context.subscriptions.push(openServer);
   context.subscriptions.push(closeServer);
 }
 
 export function deactivate() {}
+
+function withPrefix(commandName: string) {
+  return `extension.live-server++.${commandName}`;
+}
