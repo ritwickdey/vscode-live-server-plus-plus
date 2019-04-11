@@ -1,2 +1,2 @@
 export * from './ILiveServerPlusPlus';
-export * from './applyMiddlware';
+export * from './IApplyMiddlware';

@@ -14,7 +14,7 @@ import {
   GoLiveEvent,
   ServerStartError,
   ServerStopError,
-  MiddlewareTypes,
+  IMiddlewareTypes,
   ILiveServerPlusPlusServiceCtor
 } from './types';
 
@@ -28,7 +28,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverStopErrorEvent: vscode.EventEmitter<ServerStopError>;
   private serverStartErrorEvent: vscode.EventEmitter<ServerStartError>;
-  private middlewares: MiddlewareTypes[] = [];
+  private middlewares: IMiddlewareTypes[] = [];
 
   constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
     this.workspace = new WorkspaceUtils(subpath);
@@ -72,7 +72,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     this.goOfflineEvent.fire({ port: this.port });
   }
 
-  useMiddleware(...fns: MiddlewareTypes[]) {
+  useMiddleware(...fns: IMiddlewareTypes[]) {
     fns.forEach(fn => this.middlewares.push(fn));
   }
 

@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
-export type MiddlewareTypes = (
+export type IMiddlewareTypes = (
   req: IncomingMessage,
   res: ServerResponse
 ) => any;
