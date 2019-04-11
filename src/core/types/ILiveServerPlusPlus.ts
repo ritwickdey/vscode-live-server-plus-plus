@@ -27,7 +27,7 @@ export interface ILiveServerPlusPlus {
 }
 
 export interface ILiveServerPlusPlusService {
-  init(): void;
+  register(): void;
 }
 export interface ILiveServerPlusPlusServiceCtor {
   new (liveServerPlusPlus: ILiveServerPlusPlus): ILiveServerPlusPlusService;

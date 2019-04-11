@@ -79,7 +79,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   useService(...fns: ILiveServerPlusPlusServiceCtor[]) {
     fns.forEach(fn => {
       const instance = new fn(this);
-      instance.init.call(instance);
+      instance.register.call(instance);
     });
   }
 

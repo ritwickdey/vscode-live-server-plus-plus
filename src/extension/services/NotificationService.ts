@@ -9,7 +9,7 @@ import { window } from 'vscode';
 export class NotificationService implements ILiveServerPlusPlusService {
   constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {}
 
-  init() {
+  register() {
     this.liveServerPlusPlus.onDidGoLive(this.showLSPPOpened.bind(this));
     this.liveServerPlusPlus.onDidGoOffline(this.showLSPPClosed.bind(this));
   }
