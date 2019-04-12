@@ -16,6 +16,10 @@ export const config = {
   root: {
     get: () => getSettings<string>('root'),
     set: (value: string) => setSettings('root', value)
+  },
+  timeout: {
+    get: () => getSettings<number>('timeout'),
+    set: (value: number) => setSettings('timeout', value)
   }
 };
 

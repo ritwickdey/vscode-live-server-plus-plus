@@ -67,7 +67,7 @@
 		],
 		"description": "Set your favorite browser"
 	},
-	"liveServer.settings.root": {
+	"liveServer++.root": {
 		"type": "string",
 		"default": "/",
 		"pattern": "/|/[^\\/]",
