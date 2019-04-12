@@ -73,6 +73,11 @@
 		"pattern": "/|/[^\\/]",
 		"description": "Change root of Live Server.\nE.g.: /subfolder1/subfolder2"
 	},
+	"liveServer++.timeout": {
+		"type": "number",
+		"default": 400,
+		"description": "In millisecond."
+	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"copy-assets": "copyfiles -a -f ./src/core/assets/* ./out/core/assets",
