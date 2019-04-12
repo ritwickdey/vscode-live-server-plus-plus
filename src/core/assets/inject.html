@@ -1,13 +1,31 @@
- <!-- Code injected by live-server -->
- <script type="text/javascript">
+<!-- Code injected by live-server -->
+<script type="text/javascript">
     // <![CDATA[  <-- For SVG support
 
     (function () {
+
+        window.addEventListener('DOMContentLoaded', () => { console.log("loaded") });
 
         if (!('WebSocket' in window)) {
             console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
             return;
         }
+
+        function replaceDOM(content) {
+            // https://stackoverflow.com/a/3642850/6120338
+            // document.body.style.visibility = "hidden";
+
+            const pattern = /<body[^>]*>((.|[\n\r])*)<\/body>/im;
+            const body = pattern.exec(content)[0];
+            const template = document.createElement('body');
+            // template.style.visibility = "hidden";
+
+            // template.innerHTML = body;
+            document.body.replaceWith(template);
+            template.style.visibility = "";
+            // document.body.style.visibility = "";
+        }
+
 
         function refreshCSS() {
             var sheets = [].slice.call(document.getElementsByTagName("link"));
@@ -30,9 +48,9 @@
 
         var socket = new WebSocket(address);
         socket.onmessage = function (msg) {
-            const data = JSON.parse(msg.data);
-            if (data.action == 'reload') window.location.reload();
-            else if (data.action == 'refreshcss') refreshCSS();
+            const info = JSON.parse(msg.data);
+            if (info.action == 'reload') info.data && info.data.dom ? replaceDOM(info.data.dom) : window.location.reload();
+            else if (info.action == 'refreshcss') refreshCSS();
         };
         if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer++')) {
             console.log('Live reload enabled.');

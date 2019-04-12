@@ -90,12 +90,14 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         const fileName = event.document.fileName;
+        const extName = path.extname(fileName);
         const filePathFromRoot = fileName.replace(this.workspace.cwd!, '');
         this.broadcastWs(
           {
+            dom: extName === '.html' ? event.document.getText() : undefined,
             fileName: filePathFromRoot
           },
-          path.extname(fileName) === '.css' ? 'refreshcss' : 'reload'
+          extName === '.css' ? 'refreshcss' : 'reload'
         );
       }, this.debounceTimeout);
     });
@@ -176,9 +178,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     const fileStream = readFileStream(filePath);
 
     fileStream
-      .on('end', () =>
-        res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null)
-      )
+      .on('end', () => res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null))
       .pipe(res);
 
     fileStream.on('error', err => {
