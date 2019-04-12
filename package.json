@@ -87,6 +87,7 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
+		"@types/mime-types": "^2.1.0",
 		"@types/mocha": "^2.2.42",
 		"@types/node": "^10.12.21",
 		"@types/open": "^6.1.0",

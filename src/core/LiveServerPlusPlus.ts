@@ -15,7 +15,8 @@ import {
   ServerStartError,
   ServerStopError,
   IMiddlewareTypes,
-  ILiveServerPlusPlusServiceCtor
+  ILiveServerPlusPlusServiceCtor,
+  ILSPPIncomingMessage
 } from './types';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
@@ -166,19 +167,21 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     });
   }
 
-  private routesHandler(req: IncomingMessage, res: ServerResponse) {
+  private routesHandler(req: ILSPPIncomingMessage, res: ServerResponse) {
     this.applyMiddlware(req, res);
-    const reqUrl = this.getReqFileUrl(req);
+    const file = req.file;
     const cwd = this.workspace.cwd;
     if (!cwd) {
       res.end('Root Path is missing');
     }
-    const filePath = path.join(cwd!, reqUrl);
+    const filePath = path.join(cwd!, file!);
 
     const fileStream = readFileStream(filePath);
 
     fileStream
-      .on('end', () => res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null))
+      .on('end', () =>
+        res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null)
+      )
       .pipe(res);
 
     fileStream.on('error', err => {
@@ -186,14 +189,5 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       res.statusCode = err.code === 'ENOENT' ? 404 : 500;
       return res.end(null);
     });
-  }
-
-  private getReqFileUrl(req: IncomingMessage): string {
-    const { pathname } = url.parse(req.url || '/');
-
-    if (!pathname || pathname === '/') {
-      return '/index.html';
-    }
-    return pathname;
   }
 }
