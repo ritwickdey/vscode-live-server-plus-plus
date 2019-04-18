@@ -14,7 +14,7 @@ export const extensionConfig = {
     set: (value: IBrowserList) => setSettings('browser', value)
   },
   root: {
-    get: () => getSettings<string>('root'),
+    get: () => getSettings<string>('root') || '/',
     set: (value: string) => setSettings('root', value)
   },
   timeout: {

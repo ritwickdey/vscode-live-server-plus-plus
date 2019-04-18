@@ -3,14 +3,12 @@ import { LiveServerPlusPlus } from '../core/LiveServerPlusPlus';
 import { NotificationService } from './services/NotificationService';
 import { fileSelector, setMIME } from './middlewares';
 import { ILiveServerPlusPlusConfig } from '../core/types';
-import { extensionConfig } from './extensionConfig';
+import { extensionConfig } from './utils/extensionConfig';
 import { BrowserService } from './services/BrowserService';
-import { WorkspaceUtils } from '../core/WorkSpaceUtils';
+import { workspaceUtils } from './utils/workSpaceUtils';
 
-function getLSPPConfig(config: WorkspaceUtils): ILiveServerPlusPlusConfig {
-  const LSPPconfig: ILiveServerPlusPlusConfig = {
-    cwd: config.cwd!
-  };
+function getLSPPConfig(): ILiveServerPlusPlusConfig {
+  const LSPPconfig: ILiveServerPlusPlusConfig = { cwd: workspaceUtils.cwd! };
   LSPPconfig.port = extensionConfig.port.get();
   LSPPconfig.subpath = extensionConfig.root.get();
   LSPPconfig.debounceTimeout = extensionConfig.timeout.get();
@@ -18,15 +16,13 @@ function getLSPPConfig(config: WorkspaceUtils): ILiveServerPlusPlusConfig {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  const workspaceUtils = new WorkspaceUtils();
-  const liveServerPlusPlus = new LiveServerPlusPlus(getLSPPConfig(workspaceUtils));
-
+  const liveServerPlusPlus = new LiveServerPlusPlus(getLSPPConfig());
+  
   liveServerPlusPlus.useMiddleware(fileSelector, setMIME);
   liveServerPlusPlus.useService(NotificationService, BrowserService);
 
   const openServer = vscode.commands.registerCommand(getCommandWithPrefix('open'), () => {
-    workspaceUtils.reloadConfig({ subroot: extensionConfig.root.get() });
-    liveServerPlusPlus.reloadConfig(getLSPPConfig(workspaceUtils));
+    liveServerPlusPlus.reloadConfig(getLSPPConfig());
     liveServerPlusPlus.goLive();
   });
 

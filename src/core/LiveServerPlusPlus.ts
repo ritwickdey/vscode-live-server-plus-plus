@@ -4,7 +4,6 @@ import * as WebSocket from 'ws';
 import * as path from 'path';
 import { IncomingMessage, ServerResponse } from 'http';
 import { AddressInfo } from 'net';
-import { WorkspaceUtils } from './WorkSpaceUtils';
 import { readFileStream } from './FileSystem';
 import { INJECTED_TEXT, isInjectableFile } from './utils';
 import {
@@ -21,7 +20,6 @@ import {
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private port!: number;
   private cwd!: string;
-  private workspace!: WorkspaceUtils;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
   private debounceTimeout!: number;
@@ -96,7 +94,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   }
 
   private init(config: ILiveServerPlusPlusConfig) {
-    this.workspace = new WorkspaceUtils(config.subpath || '/');
+    this.cwd = config.cwd;
     this.port = config.port || 9000;
     this.debounceTimeout = config.debounceTimeout || 400;
   }

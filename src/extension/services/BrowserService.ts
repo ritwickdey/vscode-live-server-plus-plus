@@ -1,11 +1,11 @@
 import open from 'open';
-import { extensionConfig } from '../extensionConfig';
+import { extensionConfig } from '../utils/extensionConfig';
 import {
   ILiveServerPlusPlusService,
   ILiveServerPlusPlus,
   GoLiveEvent
 } from '../../core/types';
-import { WorkspaceUtils } from '../../core/WorkSpaceUtils';
+import { workspaceUtils } from '../utils/workSpaceUtils';
 
 export class BrowserService implements ILiveServerPlusPlusService {
   constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {}
@@ -17,7 +17,7 @@ export class BrowserService implements ILiveServerPlusPlusService {
   private openInBrowser(event: GoLiveEvent) {
     const host = '127.0.0.1';
     const port = event.port;
-    const pathname = '/';
+    const pathname = workspaceUtils.getActiveDoc() || undefined;
     const protocol = 'http:';
     const browserName = extensionConfig.browser.get();
     if (!browserName) return;
@@ -27,9 +27,8 @@ export class BrowserService implements ILiveServerPlusPlusService {
     // if (browserName === 'default') {
     // }
 
-    open(`${protocol}//${host}:${port}${pathname}`, { app: openParams });
+    open(`${protocol}//${host}:${port}/${pathname ? pathname : ''}`, { app: openParams });
   }
-
 
   // private openBrowser(port: number, path: string) {
   //   const host = Config.getLocalIp ? this.localIps : Config.getHost;
