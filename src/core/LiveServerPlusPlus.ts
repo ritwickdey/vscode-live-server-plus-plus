@@ -1,13 +1,12 @@
 import * as vscode from 'vscode';
 import * as http from 'http';
 import * as WebSocket from 'ws';
-import * as url from 'url';
-import { IncomingMessage, ServerResponse } from 'http';
 import * as path from 'path';
+import { IncomingMessage, ServerResponse } from 'http';
+import { AddressInfo } from 'net';
 import { WorkspaceUtils } from './WorkSpaceUtils';
 import { readFileStream } from './FileSystem';
 import { INJECTED_TEXT, isInjectableFile } from './utils';
-import { AddressInfo } from 'net';
 import {
   ILiveServerPlusPlus,
   GoOfflineEvent,
@@ -16,28 +15,27 @@ import {
   ServerStopError,
   IMiddlewareTypes,
   ILiveServerPlusPlusServiceCtor,
-  ILSPPIncomingMessage
+  ILSPPIncomingMessage,
+  ILiveServerPlusPlusConfig
 } from './types';
 
+
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
-  port: number;
-  private workspace: WorkspaceUtils;
+  port!: number;
+  private workspace!: WorkspaceUtils;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
-  private debounceTimeout: number;
+  private debounceTimeout!: number;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverStopErrorEvent: vscode.EventEmitter<ServerStopError>;
   private serverStartErrorEvent: vscode.EventEmitter<ServerStartError>;
   private middlewares: IMiddlewareTypes[] = [];
 
-  constructor({ port = 9000, subpath = '/', debounceTimeout = 500 } = {}) {
-    this.workspace = new WorkspaceUtils(subpath);
-    this.port = port;
-    this.debounceTimeout = debounceTimeout;
+  constructor(config: ILiveServerPlusPlusConfig = {}) {
+    this.init(config);
     this.goLiveEvent = new vscode.EventEmitter();
     this.goOfflineEvent = new vscode.EventEmitter();
-
     this.serverStartErrorEvent = new vscode.EventEmitter();
     this.serverStopErrorEvent = new vscode.EventEmitter();
   }
@@ -56,6 +54,10 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   get onServerStopError() {
     return this.serverStopErrorEvent.event;
+  }
+
+  reloadConfig(config: ILiveServerPlusPlusConfig = {}) {
+    this.init(config);
   }
 
   async goLive() {
@@ -82,6 +84,12 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       const instance = new fn(this);
       instance.register.call(instance);
     });
+  }
+
+  private init(config: ILiveServerPlusPlusConfig) {
+    this.workspace = new WorkspaceUtils(config.subpath || '/');
+    this.port = config.port || 9000;
+    this.debounceTimeout = config.debounceTimeout || 500;
   }
 
   private registerOnChangeReload() {
@@ -179,9 +187,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     const fileStream = readFileStream(filePath);
 
     fileStream
-      .on('end', () =>
-        res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null)
-      )
+      .on('end', () => res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null))
       .pipe(res);
 
     fileStream.on('error', err => {

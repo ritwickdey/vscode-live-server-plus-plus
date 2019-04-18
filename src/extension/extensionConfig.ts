@@ -4,7 +4,7 @@ import { workspace } from 'vscode';
 
 type IBrowserList = 'default' | 'chrome' | 'firefox' | 'microsoft-edge' | null;
 
-export const config = {
+export const extensionConfig = {
   port: {
     get: () => getSettings<number>('port'),
     set: (portNo: number) => setSettings('port', portNo)
