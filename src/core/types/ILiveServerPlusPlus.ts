@@ -10,20 +10,16 @@ export interface GoOfflineEvent {
   readonly port: number;
 }
 
-export interface ServerStartError {
-  readonly port: number;
+export interface ServerError {
+  readonly message: string;
 }
 
-export interface ServerStopError {
-  readonly port: number;
-}
 
 export interface ILiveServerPlusPlus {
   readonly port: number;
   readonly onDidGoLive: Event<GoLiveEvent>;
   readonly onDidGoOffline: Event<GoOfflineEvent>;
-  readonly onServerStartError: Event<ServerStartError>;
-  readonly onServerStopError: Event<ServerStopError>;
+  readonly onServerError: Event<ServerError>;
 }
 
 export interface ILiveServerPlusPlusService {

@@ -2,7 +2,8 @@ import {
   ILiveServerPlusPlus,
   GoLiveEvent,
   GoOfflineEvent,
-  ILiveServerPlusPlusService
+  ILiveServerPlusPlusService,
+  ServerError
 } from '../../core/types/ILiveServerPlusPlus';
 import { showPopUpMsg } from '../utils/showPopUpMsg';
 
@@ -12,6 +13,7 @@ export class NotificationService implements ILiveServerPlusPlusService {
   register() {
     this.liveServerPlusPlus.onDidGoLive(this.showLSPPOpened.bind(this));
     this.liveServerPlusPlus.onDidGoOffline(this.showLSPPClosed.bind(this));
+    this.liveServerPlusPlus.onServerError(this.showErrorMsg.bind(this));
   }
 
   private showLSPPOpened(event: GoLiveEvent) {
@@ -19,5 +21,11 @@ export class NotificationService implements ILiveServerPlusPlusService {
   }
   private showLSPPClosed(event: GoOfflineEvent) {
     showPopUpMsg(`Server is closed`);
+  }
+
+  private showErrorMsg(event: ServerError) {
+    showPopUpMsg(event.message || 'Something went wrong', {
+      msgType: 'error'
+    });
   }
 }

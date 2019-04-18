@@ -11,14 +11,12 @@ import {
   ILiveServerPlusPlus,
   GoOfflineEvent,
   GoLiveEvent,
-  ServerStartError,
-  ServerStopError,
+  ServerError,
   IMiddlewareTypes,
   ILiveServerPlusPlusServiceCtor,
   ILSPPIncomingMessage,
   ILiveServerPlusPlusConfig
 } from './types';
-
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port!: number;
@@ -28,16 +26,14 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private debounceTimeout!: number;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
-  private serverStopErrorEvent: vscode.EventEmitter<ServerStopError>;
-  private serverStartErrorEvent: vscode.EventEmitter<ServerStartError>;
+  private serverErrorEvent: vscode.EventEmitter<ServerError>;
   private middlewares: IMiddlewareTypes[] = [];
 
   constructor(config: ILiveServerPlusPlusConfig = {}) {
     this.init(config);
     this.goLiveEvent = new vscode.EventEmitter();
     this.goOfflineEvent = new vscode.EventEmitter();
-    this.serverStartErrorEvent = new vscode.EventEmitter();
-    this.serverStopErrorEvent = new vscode.EventEmitter();
+    this.serverErrorEvent = new vscode.EventEmitter();
   }
 
   get onDidGoLive() {
@@ -48,12 +44,8 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     return this.goOfflineEvent.event;
   }
 
-  get onServerStartError() {
-    return this.serverStartErrorEvent.event;
-  }
-
-  get onServerStopError() {
-    return this.serverStopErrorEvent.event;
+  get onServerError() {
+    return this.serverErrorEvent.event;
   }
 
   reloadConfig(config: ILiveServerPlusPlusConfig = {}) {
@@ -115,8 +107,21 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private listenServer() {
     return new Promise(resolve => {
       this.server = http.createServer(this.routesHandler.bind(this));
+
+      const onPortError = (error: Error) => {
+        if ((error as any).code === 'EADDRINUSE') {
+          this.serverErrorEvent.fire({ message: `${this.port} is already in use!` });
+          return;
+        }
+
+        throw error;
+      };
+
+      this.server.on('error', onPortError);
+
       this.attachWSListeners();
       this.server.listen(this.port, () => {
+        this.server!.removeListener('error', onPortError);
         resolve();
       });
     });
