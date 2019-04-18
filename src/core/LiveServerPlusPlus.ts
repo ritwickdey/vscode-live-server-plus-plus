@@ -11,7 +11,7 @@ import {
   ILiveServerPlusPlus,
   GoOfflineEvent,
   GoLiveEvent,
-  ServerError,
+  ServerErrorEvent,
   IMiddlewareTypes,
   ILiveServerPlusPlusServiceCtor,
   ILSPPIncomingMessage,
@@ -26,7 +26,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private debounceTimeout!: number;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
-  private serverErrorEvent: vscode.EventEmitter<ServerError>;
+  private serverErrorEvent: vscode.EventEmitter<ServerErrorEvent>;
   private middlewares: IMiddlewareTypes[] = [];
 
   constructor(config: ILiveServerPlusPlusConfig = {}) {
@@ -48,11 +48,23 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     return this.serverErrorEvent.event;
   }
 
+  get isServerRunning() {
+    return this.server ? this.server!.listening : false;
+  }
+
   reloadConfig(config: ILiveServerPlusPlusConfig = {}) {
     this.init(config);
   }
 
   async goLive() {
+    if (this.isServerRunning) {
+      this.serverErrorEvent.fire({
+        code: 'serverIsAlreadyRunning',
+        message: 'Server is already running'
+      });
+      return;
+    }
+
     await this.listenServer();
     this.registerOnChangeReload();
     this.goLiveEvent.fire({
@@ -62,6 +74,13 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   }
 
   async shutdown() {
+    if (!this.isServerRunning) {
+      this.serverErrorEvent.fire({
+        code: 'serverIsNotRunning',
+        message: 'Server is not running'
+      });
+      return;
+    }
     await this.closeWs();
     await this.closeServer();
     this.goOfflineEvent.fire({ port: this.port });
@@ -81,7 +100,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private init(config: ILiveServerPlusPlusConfig) {
     this.workspace = new WorkspaceUtils(config.subpath || '/');
     this.port = config.port || 9000;
-    this.debounceTimeout = config.debounceTimeout || 500;
+    this.debounceTimeout = config.debounceTimeout || 400;
   }
 
   private registerOnChangeReload() {
@@ -110,7 +129,10 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
       const onPortError = (error: Error) => {
         if ((error as any).code === 'EADDRINUSE') {
-          this.serverErrorEvent.fire({ message: `${this.port} is already in use!` });
+          this.serverErrorEvent.fire({
+            code: 'portAlreadyInUse',
+            message: `${this.port} is already in use!`
+          });
           return;
         }
 
