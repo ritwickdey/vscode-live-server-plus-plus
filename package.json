@@ -3,6 +3,7 @@
 	"displayName": "vscode-live-server-plus-plus",
 	"description": "It's Truly Live",
 	"version": "0.0.1",
+	"publisher": "ritwickdey",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
