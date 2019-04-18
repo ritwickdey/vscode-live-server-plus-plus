@@ -20,7 +20,6 @@ export interface ServerErrorEvent {
 }
 
 export interface ILiveServerPlusPlus {
-  readonly port: number;
   readonly onDidGoLive: Event<GoLiveEvent>;
   readonly onDidGoOffline: Event<GoOfflineEvent>;
   readonly onServerError: Event<ServerErrorEvent>;
@@ -35,6 +34,7 @@ export interface ILiveServerPlusPlusServiceCtor {
 }
 
 export interface ILiveServerPlusPlusConfig {
+  cwd: string;
   port?: number;
   subpath?: string;
   debounceTimeout?: number;

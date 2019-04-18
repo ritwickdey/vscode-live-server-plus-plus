@@ -19,7 +19,8 @@ import {
 } from './types';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
-  port!: number;
+  private port!: number;
+  private cwd!: string;
   private workspace!: WorkspaceUtils;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
@@ -29,7 +30,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private serverErrorEvent: vscode.EventEmitter<ServerErrorEvent>;
   private middlewares: IMiddlewareTypes[] = [];
 
-  constructor(config: ILiveServerPlusPlusConfig = {}) {
+  constructor(config: ILiveServerPlusPlusConfig) {
     this.init(config);
     this.goLiveEvent = new vscode.EventEmitter();
     this.goOfflineEvent = new vscode.EventEmitter();
@@ -52,7 +53,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     return this.server ? this.server!.listening : false;
   }
 
-  reloadConfig(config: ILiveServerPlusPlusConfig = {}) {
+  reloadConfig(config: ILiveServerPlusPlusConfig) {
     this.init(config);
   }
 
@@ -67,10 +68,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     await this.listenServer();
     this.registerOnChangeReload();
-    this.goLiveEvent.fire({
-      pathUri: '/',
-      port: (this.server!.address() as AddressInfo).port
-    });
+    this.goLiveEvent.fire({ port: (this.server!.address() as AddressInfo).port });
   }
 
   async shutdown() {
@@ -111,7 +109,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       timeout = setTimeout(() => {
         const fileName = event.document.fileName;
         const extName = path.extname(fileName);
-        const filePathFromRoot = fileName.replace(this.workspace.cwd!, '');
+        const filePathFromRoot = fileName.replace(this.cwd!, '');
         this.broadcastWs(
           {
             dom: extName === '.html' ? event.document.getText() : undefined,
@@ -205,7 +203,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private routesHandler(req: ILSPPIncomingMessage, res: ServerResponse) {
     this.applyMiddlware(req, res);
     const file = req.file;
-    const cwd = this.workspace.cwd;
+    const cwd = this.cwd;
     if (!cwd) {
       res.end('Root Path is missing');
     }
