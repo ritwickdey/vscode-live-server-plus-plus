@@ -19,12 +19,12 @@ export function activate(context: vscode.ExtensionContext) {
     liveServerPlusPlus.goLive();
   });
 
-  const closeerver = vscode.commands.registerCommand(getCmdWithPrefix('close'), () => {
+  const closeServer = vscode.commands.registerCommand(getCmdWithPrefix('close'), () => {
     liveServerPlusPlus.shutdown();
   });
 
   context.subscriptions.push(openServer);
-  context.subscriptions.push(closeerver);
+  context.subscriptions.push(closeServer);
 }
 
 export function deactivate() {}
