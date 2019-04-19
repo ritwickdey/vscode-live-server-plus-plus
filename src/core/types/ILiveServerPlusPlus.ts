@@ -1,28 +1,29 @@
 import { Event } from 'vscode';
 
-export interface GoLiveEvent {
-  readonly port: number;
-  readonly pathUri?: string;
-}
-
-export interface GoOfflineEvent {
-  readonly port: number;
-}
-
 type ServerErrorCodes =
   | 'serverIsAlreadyRunning'
   | 'portAlreadyInUse'
   | 'serverIsNotRunning';
 
-export interface ServerErrorEvent {
-  readonly message: string;
-  readonly code: ServerErrorCodes;
-}
-
 export interface ILiveServerPlusPlus {
   readonly onDidGoLive: Event<GoLiveEvent>;
   readonly onDidGoOffline: Event<GoOfflineEvent>;
   readonly onServerError: Event<ServerErrorEvent>;
+  readonly port: number;
+  readonly pathUri?: string;
+}
+
+export interface LSPPEvent {
+  readonly LSPP: ILiveServerPlusPlus;
+}
+
+export interface GoLiveEvent extends LSPPEvent {}
+
+export interface GoOfflineEvent extends LSPPEvent {}
+
+export interface ServerErrorEvent extends LSPPEvent {
+  readonly message: string;
+  readonly code: ServerErrorCodes;
 }
 
 export interface ILiveServerPlusPlusService {

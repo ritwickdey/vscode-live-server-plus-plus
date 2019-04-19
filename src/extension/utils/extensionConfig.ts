@@ -2,7 +2,7 @@
 
 import { workspace } from 'vscode';
 
-type IBrowserList = 'default' | 'chrome' | 'firefox' | 'microsoft-edge' | null;
+export type IBrowserList = 'default' | 'chrome' | 'firefox' | 'microsoft-edge' | null;
 
 export const extensionConfig = {
   port: {

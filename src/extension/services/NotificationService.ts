@@ -17,7 +17,7 @@ export class NotificationService implements ILiveServerPlusPlusService {
   }
 
   private showLSPPOpened(event: GoLiveEvent) {
-    showPopUpMsg(`Server is started at ${event.port}`);
+    showPopUpMsg(`Server is started at ${event.LSPP.port}`);
   }
   private showLSPPClosed(event: GoOfflineEvent) {
     showPopUpMsg(`Server is closed`);

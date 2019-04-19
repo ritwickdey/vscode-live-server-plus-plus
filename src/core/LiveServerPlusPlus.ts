@@ -18,7 +18,7 @@ import {
 } from './types';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
-  private port!: number;
+  port!: number;
   private cwd!: string;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
@@ -58,6 +58,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   async goLive() {
     if (this.isServerRunning) {
       this.serverErrorEvent.fire({
+        LSPP: this,
         code: 'serverIsAlreadyRunning',
         message: 'Server is already running'
       });
@@ -66,12 +67,13 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     await this.listenServer();
     this.registerOnChangeReload();
-    this.goLiveEvent.fire({ port: (this.server!.address() as AddressInfo).port });
+    this.goLiveEvent.fire({ LSPP: this });
   }
 
   async shutdown() {
     if (!this.isServerRunning) {
       this.serverErrorEvent.fire({
+        LSPP: this,
         code: 'serverIsNotRunning',
         message: 'Server is not running'
       });
@@ -79,7 +81,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     }
     await this.closeWs();
     await this.closeServer();
-    this.goOfflineEvent.fire({ port: this.port });
+    this.goOfflineEvent.fire({ LSPP: this });
   }
 
   useMiddleware(...fns: IMiddlewareTypes[]) {
@@ -126,6 +128,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       const onPortError = (error: Error) => {
         if ((error as any).code === 'EADDRINUSE') {
           this.serverErrorEvent.fire({
+            LSPP: this,
             code: 'portAlreadyInUse',
             message: `${this.port} is already in use!`
           });
