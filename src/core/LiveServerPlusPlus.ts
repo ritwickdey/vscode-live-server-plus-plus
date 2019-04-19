@@ -86,12 +86,11 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   async shutdown() {
     if (!this.isServerRunning) {
-      this.serverErrorEvent.fire({
+      return this.serverErrorEvent.fire({
         LSPP: this,
         code: 'serverIsNotRunning',
         message: 'Server is not running'
       });
-      return;
     }
     await this.closeWs();
     await this.closeServer();
@@ -157,7 +156,10 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   private closeServer() {
     return new Promise((resolve, reject) => {
-      this.server!.close(err => (err ? reject(err) : resolve()));
+      this.server!.close(err => {
+        return err ? reject(err) : resolve();
+      });
+      this.server!.emit('close');
     });
   }
 

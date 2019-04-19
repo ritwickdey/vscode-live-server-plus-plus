@@ -30,8 +30,7 @@
   },
   "homepage": "https://ritwickdey.github.io/vscode-live-server-plus-plus",
   "activationEvents": [
-    "onCommand:extension.live-server++.open",
-    "onCommand:extension.live-server++.close"
+    "*"
   ],
   "main": "./out/extension/index.js",
   "contributes": {
@@ -50,7 +49,7 @@
       "properties": {
         "liveServer++.port": {
           "type": "number",
-          "default": 6000,
+          "default": 5555,
           "minimum": 0,
           "maximum": 65535,
           "description": "Use 0 for random port."

@@ -6,12 +6,13 @@ import { ILiveServerPlusPlusConfig } from '../core/types';
 import { extensionConfig } from './utils/extensionConfig';
 import { BrowserService } from './services/BrowserService';
 import { workspaceUtils } from './utils/workSpaceUtils';
+import { StatusbarService } from './services/StatusbarService';
 
 export function activate(context: vscode.ExtensionContext) {
   const liveServerPlusPlus = new LiveServerPlusPlus(getLSPPConfig());
 
   liveServerPlusPlus.useMiddleware(fileSelector, setMIME);
-  liveServerPlusPlus.useService(NotificationService, BrowserService);
+  liveServerPlusPlus.useService(NotificationService, BrowserService, StatusbarService);
 
   const openServer = vscode.commands.registerCommand(getCmdWithPrefix('open'), () => {
     liveServerPlusPlus.reloadConfig(getLSPPConfig());
@@ -31,7 +32,6 @@ export function deactivate() {}
 function getCmdWithPrefix(commandName: string) {
   return `extension.live-server++.${commandName}`;
 }
-
 
 function getLSPPConfig(): ILiveServerPlusPlusConfig {
   const LSPPconfig: ILiveServerPlusPlusConfig = { cwd: workspaceUtils.cwd! };
