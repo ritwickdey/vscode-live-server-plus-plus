@@ -3,7 +3,6 @@ import * as http from 'http';
 import * as WebSocket from 'ws';
 import * as path from 'path';
 import { IncomingMessage, ServerResponse } from 'http';
-import { AddressInfo } from 'net';
 import { readFileStream } from './FileSystem';
 import { INJECTED_TEXT, isInjectableFile } from './utils';
 import {
