@@ -16,6 +16,7 @@ import {
   ILiveServerPlusPlusConfig
 } from './types';
 import { LSPPError } from './LSPPError';
+import { urlJoin } from '../extension/utils/urlJoin';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port!: number;
@@ -122,7 +123,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       timeout = setTimeout(() => {
         const fileName = event.document.fileName;
         const extName = path.extname(fileName);
-        const filePathFromRoot = fileName.replace(this.cwd!, '');
+        const filePathFromRoot = urlJoin(fileName.replace(this.cwd!, '')); // bit tricky. This will change Windows's \ to /
         this.broadcastWs(
           {
             dom: extName === '.html' ? event.document.getText() : undefined,

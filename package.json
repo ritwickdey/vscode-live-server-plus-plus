@@ -77,7 +77,7 @@
         },
         "liveServer++.timeout": {
           "type": "number",
-          "default": 500,
+          "default": 300,
           "description": "In millisecond."
         }
       }
