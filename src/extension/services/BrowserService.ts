@@ -8,6 +8,8 @@ import {
 } from '../../core/types';
 import { workspaceUtils } from '../utils/workSpaceUtils';
 import { getNormalizedBrowserName } from '../utils/getNormalizedBrowserName';
+import { isInjectableFile } from '../../core/utils';
+import { urlJoin } from '../utils/urlJoin';
 
 export class BrowserService implements ILiveServerPlusPlusService {
   constructor(private liveServerPlusPlus: ILiveServerPlusPlus) {}
@@ -20,7 +22,7 @@ export class BrowserService implements ILiveServerPlusPlusService {
   private openInBrowser(event: GoLiveEvent) {
     const host = '127.0.0.1';
     const port = event.LSPP.port;
-    const pathname = workspaceUtils.getActiveDoc() || undefined;
+    const pathname = this.getPathname();
     const protocol = 'http:';
     const browserName = extensionConfig.browser.get();
     if (!browserName) return;
@@ -31,7 +33,13 @@ export class BrowserService implements ILiveServerPlusPlusService {
       openParams.push(getNormalizedBrowserName(browserName));
     }
 
-    open(`${protocol}//${host}:${port}/${pathname ? pathname : ''}`, { app: openParams });
+    open(`${protocol}//${host}:${port}${pathname}`, { app: openParams });
+  }
+
+  private getPathname() {
+    const activeDoc = workspaceUtils.getActiveDoc();
+    if (!activeDoc || !isInjectableFile(activeDoc)) return '/';
+    return urlJoin('/', activeDoc);
   }
 
   private openIfServerIsAlreadyRunning(event: ServerErrorEvent) {
