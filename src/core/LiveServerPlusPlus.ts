@@ -15,10 +15,11 @@ import {
   ILSPPIncomingMessage,
   ILiveServerPlusPlusConfig
 } from './types';
+import { LSPPError } from './LSPPError';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port!: number;
-  private cwd!: string;
+  private cwd: string | undefined;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
   private debounceTimeout!: number;
@@ -56,17 +57,31 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   async goLive() {
     if (this.isServerRunning) {
-      this.serverErrorEvent.fire({
+      return this.serverErrorEvent.fire({
         LSPP: this,
         code: 'serverIsAlreadyRunning',
         message: 'Server is already running'
       });
-      return;
     }
+    try {
+      await this.listenServer();
+      this.registerOnChangeReload();
+      this.goLiveEvent.fire({ LSPP: this });
+    } catch (error) {
+      if (error.code === 'EADDRINUSE') {
+        return this.serverErrorEvent.fire({
+          LSPP: this,
+          code: 'portAlreadyInUse',
+          message: `${this.port} is already in use!`
+        });
+      }
 
-    await this.listenServer();
-    this.registerOnChangeReload();
-    this.goLiveEvent.fire({ LSPP: this });
+      return this.serverErrorEvent.fire({
+        LSPP: this,
+        code: error.code,
+        message: error.message
+      });
+    }
   }
 
   async shutdown() {
@@ -121,22 +136,15 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   }
 
   private listenServer() {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (!this.cwd) {
+        const error = new LSPPError('CWD is not defined', 'cwdUndefined');
+        return reject(error);
+      }
+
       this.server = http.createServer(this.routesHandler.bind(this));
 
-      const onPortError = (error: Error) => {
-        if ((error as any).code === 'EADDRINUSE') {
-          this.serverErrorEvent.fire({
-            LSPP: this,
-            code: 'portAlreadyInUse',
-            message: `${this.port} is already in use!`
-          });
-          return;
-        }
-
-        throw error;
-      };
-
+      const onPortError = reject;
       this.server.on('error', onPortError);
 
       this.attachWSListeners();
@@ -171,7 +179,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   }
 
   private attachWSListeners() {
-    if (!this.server) return;
+    if (!this.server) throw new Error('Server is not defined');
 
     this.ws = new WebSocket.Server({ noServer: true });
 
@@ -201,9 +209,11 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   }
 
   private routesHandler(req: ILSPPIncomingMessage, res: ServerResponse) {
+    const cwd = this.cwd;
+
     this.applyMiddlware(req, res);
     const file = req.file;
-    const cwd = this.cwd;
+
     if (!cwd) {
       res.end('Root Path is missing');
     }

@@ -25,11 +25,12 @@ export class NotificationService implements ILiveServerPlusPlusService {
 
   private showServerErrorMsg(event: ServerErrorEvent) {
     if (event.code === 'serverIsAlreadyRunning') {
-      //keep silent. bcz we'll open the browser with running port :D
+      //issss! keep silent. bcz we'll open the browser with running port :D
       return;
     }
-    showPopUpMsg(event.message || 'Something went wrong', {
-      msgType: 'error'
-    });
+    if (event.code === 'cwdUndefined') {
+      return showPopUpMsg('Please open a workspace', { msgType: 'error' });
+    }
+    showPopUpMsg(event.message || 'Something went wrong', { msgType: 'error' });
   }
 }

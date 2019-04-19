@@ -1,9 +1,10 @@
 import { Event } from 'vscode';
 
-type ServerErrorCodes =
+export type LSPPServerErrorCodes =
   | 'serverIsAlreadyRunning'
   | 'portAlreadyInUse'
-  | 'serverIsNotRunning';
+  | 'serverIsNotRunning'
+  | 'cwdUndefined';
 
 export interface ILiveServerPlusPlus {
   readonly onDidGoLive: Event<GoLiveEvent>;
@@ -23,7 +24,7 @@ export interface GoOfflineEvent extends LSPPEvent {}
 
 export interface ServerErrorEvent extends LSPPEvent {
   readonly message: string;
-  readonly code: ServerErrorCodes;
+  readonly code: LSPPServerErrorCodes;
 }
 
 export interface ILiveServerPlusPlusService {
