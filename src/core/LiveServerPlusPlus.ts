@@ -224,9 +224,18 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     const fileStream = readFileStream(filePath);
 
+    let isFirstTime = true;
+    // res.write(isInjectableFile(filePath) ? INJECTED_TEXT : null);
     fileStream
-      .on('end', () => res.end(isInjectableFile(filePath) ? INJECTED_TEXT : null))
-      .pipe(res);
+      .on('data', data => {
+        if (isFirstTime)
+          res.write(isInjectableFile(filePath) ? INJECTED_TEXT : null);
+        res.write(data);
+        isFirstTime = false;
+      })
+      .on('close', () => {
+        res.end();
+      });
 
     fileStream.on('error', err => {
       console.error('ERROR ', err);
