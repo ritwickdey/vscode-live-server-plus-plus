@@ -5,4 +5,4 @@
   - Initial release
   - hot Reload supported
   - No need to save
-  - 4 settings are added (Port, Root, indexFile, timeout, browser)
+  - 5 settings are added (Port, Root, indexFile, timeout, browser)
