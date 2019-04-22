@@ -1,4 +1,9 @@
-# Vscode Live Server++ (BETA)
+<p align="center">
+  <img width="128" height="128" src="./images/vscode-live-server-plus-plus.png">
+</p>
+<h3 align="center">Vscode Live Server++ (BETA) </h3>
+
+----
 
 ![VSCode Live Server++](./images/vscode-live-server-plus-plus_preview1.gif)
 

@@ -1,6 +1,6 @@
 {
   "name": "vscode-live-server-plus-plus",
-  "displayName": "vscode-live-server-plus-plus",
+  "displayName": "Live Server++",
   "description": "It's Truly Live",
   "version": "0.0.1",
   "publisher": "ritwickdey",
@@ -12,6 +12,7 @@
     "email": "ritwickdey@outlook.com",
     "url": "https://ritwickdey.github.io"
   },
+  "icon": "./images/vscode-live-server-plus-plus.png",
   "categories": [
     "Other"
   ],
