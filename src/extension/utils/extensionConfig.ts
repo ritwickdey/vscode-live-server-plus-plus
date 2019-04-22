@@ -20,6 +20,10 @@ export const extensionConfig = {
   timeout: {
     get: () => getSettings<number>('timeout'),
     set: (value: number) => setSettings('timeout', value)
+  },
+  indexFile: {
+    get: () => getSettings<string>('indexFile'),
+    set: (value: string) => setSettings('indexFile', value)
   }
 };
 
