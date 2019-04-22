@@ -5,7 +5,7 @@ import { Buffer } from 'buffer';
 import { isSupportedFile } from './utils/index';
 
 // Stream version
-export const readFileStream = (filePath: string, encoding = 'utf8') => {
+export const readFileStream = (filePath: string, encoding?: string) => {
   const dirtyFile = getDirtyFileFromVscode(filePath);
 
   if (dirtyFile) {
@@ -33,9 +33,7 @@ export const readFile = (filePath: string): Promise<Buffer> => {
   return readFileFromFileSystem(filePath);
 };
 
-const readFileFromVscodeWorkspace = (
-  filePath: string | vscode.TextDocument
-) => {
+const readFileFromVscodeWorkspace = (filePath: string | vscode.TextDocument) => {
   return new Promise<Buffer>(async (resolve, reject) => {
     let doc: vscode.TextDocument;
     try {

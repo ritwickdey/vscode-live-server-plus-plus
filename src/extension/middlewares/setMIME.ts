@@ -6,5 +6,6 @@ import * as path from 'path';
 export const setMIME = (req: ILSPPIncomingMessage, res: ServerResponse) => {
   const extname = path.extname(req.file!);
 
+  req.contentType = String(contentType(extname));
   res.setHeader('content-type', String(contentType(extname)));
 };

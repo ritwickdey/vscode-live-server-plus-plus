@@ -288,18 +288,17 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     const file = req.file!; //file comes from one of middlware
     const filePath = path.isAbsolute(file) ? file : path.join(cwd!, file);
-    const fileStream = readFileStream(filePath);
+    const contentType = req.contentType || '';
+    const fileStream = readFileStream(
+      filePath,
+      contentType.indexOf('image') !== -1 ? undefined : 'utf8'
+    );
 
-    let isJustNowStreamStarted = true;
-    fileStream.on('data', data => {
-      if (isJustNowStreamStarted && isInjectableFile(filePath)) {
-        res.write(INJECTED_TEXT);
-        isJustNowStreamStarted = false;
-      }
-      res.write(data);
+    fileStream.on('open', () => {
+      // TOOD: MAY BE, WE SHOULD INJECT IT INSIDE <head> TAG (although browser are not smart enought)
+      if (isInjectableFile(filePath)) res.write(INJECTED_TEXT);
+      fileStream.pipe(res);
     });
-
-    fileStream.on('end', () => res.end());
 
     fileStream.on('error', err => {
       console.error('ERROR ', err);
