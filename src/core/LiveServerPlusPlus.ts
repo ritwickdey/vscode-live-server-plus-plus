@@ -19,7 +19,7 @@ import { LSPPError } from './LSPPError';
 import { urlJoin } from '../extension/utils/urlJoin';
 
 interface IWsWatcher {
-  watching: string[]; //relative paths
+  watchingPaths: string[]; //relative paths
   client: WebSocket;
 }
 
@@ -194,11 +194,9 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     //TODO: WE SHOULD WATCH ALL FILE. FOR NOW, THE LIB WORKS ONLY FOR HTML
     if (isInjectableFile(data.fileName)) {
       clients = this.wsWatcherList.reduce(
-        (allClients, { client, watching }) => {
-          const isConnOpen = client.readyState === WebSocket.OPEN;
-          if (isConnOpen && this.isInWatchingList(data.fileName, watching)) {
+        (allClients, { client, watchingPaths }) => {
+          if (this.isInWatchingList(data.fileName, watchingPaths))
             allClients.push(client);
-          }
           return allClients;
         },
         [] as WebSocket[]
@@ -273,7 +271,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private addToWsWatcherList(client: WebSocket, watchDirs: string | string[]) {
     const _watchDirs = Array.isArray(watchDirs) ? watchDirs : [watchDirs];
 
-    this.wsWatcherList.push({ client, watching: _watchDirs });
+    this.wsWatcherList.push({ client, watchingPaths: _watchDirs });
   }
 
   private applyMiddlware(req: IncomingMessage, res: ServerResponse) {
