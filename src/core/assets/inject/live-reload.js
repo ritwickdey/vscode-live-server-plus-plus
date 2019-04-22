@@ -34,7 +34,7 @@
   });
 
   function updateDOM(html) {
-    applyOneOf(onDemandHTMLRender, fullHTMLRerender, fullBrowserReload)(html);
+    tryOneOf(onDemandHTMLRender, fullHTMLRerender, fullBrowserReload)(html);
   }
 
   function fullHTMLRerender(html) {
@@ -56,7 +56,7 @@
     window.location.reload();
   }
 
-  function applyOneOf(...fns) {
+  function tryOneOf(...fns) {
     return (...args) => {
       for (let i = 0; i < fns.length; i++) {
         const fn = fns[i];
@@ -80,6 +80,7 @@
     return url1 === url2;
   }
 
+  // THIS FUNCTION IS MODIFIED FROM `https://www.npmjs.com/package/live-server`
   function refreshCSS() {
     var sheets = [].slice.call(document.getElementsByTagName('link'));
     var head = document.getElementsByTagName('head')[0];

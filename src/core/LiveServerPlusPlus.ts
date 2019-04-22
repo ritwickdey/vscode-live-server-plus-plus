@@ -174,6 +174,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private broadcastWs(data: any, action: 'reload' | 'hot' | 'refreshcss' = 'reload') {
     if (!this.ws) return;
 
+     //TODO: WE SHOULD SEND DATA TO REQURIED CLIENT
     this.ws.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ data, action }));

@@ -22,7 +22,7 @@ function getReqFileUrl(req: ILSPPIncomingMessage): string {
   const { pathname = '/' } = url.parse(req.url || '/');
 
   if (!path.extname(pathname)) {
-    //TODO: THIS NEED TO FIX. WE HAVE LOOK INTO DISK
+    //TODO: THIS NEED TO FIX. WE HAVE TO LOOK INTO DISK
     return `.${path.join(pathname, extensionConfig.indexFile.get())}`;
   }
   return pathname;
