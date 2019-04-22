@@ -1,9 +1,8 @@
 # Change Log
 
-All notable changes to the "vscode-live-server-plus-plus" extension will be documented in this file.
+* ## v0.0.1 (##DATE##)
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+  - Initial release
+  - hot Reload supported
+  - No need to save
+  - 4 settings are added (Port, Root, indexFile, timeout, browser)

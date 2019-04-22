@@ -17,7 +17,7 @@
   ],
   "preview": true,
   "galleryBanner": {
-    "color": "#41205f",
+    "color": "#3c1c59",
     "theme": "dark"
   },
   "bugs": {
@@ -80,7 +80,7 @@
         },
         "liveServer++.root": {
           "type": "string",
-          "default": "/",
+          "default": "./",
           "pattern": "./|/[^\\/]",
           "description": "Change root of Live Server.\nE.g.: ./subfolder1/subfolder2"
         },
