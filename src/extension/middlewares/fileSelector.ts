@@ -1,20 +1,29 @@
 import { ServerResponse } from 'http';
+import path from 'path';
 import * as url from 'url';
 import { ILSPPIncomingMessage } from '../../core/types';
+import { extensionConfig } from '../utils/extensionConfig';
 
-export const fileSelector = (
-  req: ILSPPIncomingMessage,
-  res: ServerResponse
-) => {
-  const file = getReqFileUrl(req);
-  req.file = file;
+const LIVE_SERVER_ASSETS = path.join(__dirname, '../../core/assets');
+
+export const fileSelector = (req: ILSPPIncomingMessage, res: ServerResponse) => {
+  let fileUrl = getReqFileUrl(req);
+
+  if (fileUrl.startsWith('/_live-server_/')) {
+    fileUrl = path.join(LIVE_SERVER_ASSETS, fileUrl.replace('/_live-server_/', ''));
+  } else if (fileUrl.startsWith('/')) {
+    fileUrl = `.${fileUrl}`;
+  }
+
+  req.file = fileUrl;
 };
 
 function getReqFileUrl(req: ILSPPIncomingMessage): string {
-  const { pathname } = url.parse(req.url || '/');
+  const { pathname = '/' } = url.parse(req.url || '/');
 
-  if (!pathname || pathname === '/') {
-    return '/index.html';
+  if (!path.extname(pathname)) {
+    //TODO: THIS NEED TO FIX. WE HAVE LOOK INTO DISK
+    return `.${path.join(pathname, extensionConfig.indexFile.get())}`;
   }
   return pathname;
 }

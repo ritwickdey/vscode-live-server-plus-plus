@@ -32,6 +32,15 @@
   "activationEvents": [
     "*"
   ],
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "copy-assets": "cpx \"./src/core/assets/**/*\" \"./out/core/assets\"",
+    "copy-assets:watch": "npm run copy-assets -- --w",
+    "compile": "tsc -p ./ && npm run copy-assets",
+    "watch": "npm run copy-assets  && tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
   "main": "./out/extension/index.js",
   "contributes": {
     "commands": [
@@ -72,24 +81,21 @@
         "liveServer++.root": {
           "type": "string",
           "default": "/",
-          "pattern": "/|/[^\\/]",
-          "description": "Change root of Live Server.\nE.g.: /subfolder1/subfolder2"
+          "pattern": "./|/[^\\/]",
+          "description": "Change root of Live Server.\nE.g.: ./subfolder1/subfolder2"
         },
         "liveServer++.timeout": {
           "type": "number",
           "default": 300,
           "description": "In millisecond."
+        },
+        "liveServer++.indexFile": {
+          "type": "string",
+          "default": "index.html",
+          "description": "Index File of server"
         }
       }
     }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "copy-assets": "copyfiles -a -f ./src/core/assets/* ./out/core/assets",
-    "compile": "tsc -p ./ && npm run copy-assets",
-    "watch": "npm run copy-assets  && tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.0",
@@ -97,7 +103,7 @@
     "@types/node": "^10.12.21",
     "@types/open": "^6.1.0",
     "@types/ws": "^6.0.1",
-    "copyfiles": "^2.1.0",
+    "cpx": "^1.5.0",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
     "vscode": "^1.1.28"

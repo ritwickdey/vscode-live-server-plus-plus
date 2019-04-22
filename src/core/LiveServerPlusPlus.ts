@@ -126,10 +126,10 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
         const filePathFromRoot = urlJoin(fileName.replace(this.cwd!, '')); // bit tricky. This will change Windows's \ to /
         this.broadcastWs(
           {
-            dom: extName === '.html' ? event.document.getText() : undefined,
+            dom: isInjectableFile(fileName) ? event.document.getText() : undefined,
             fileName: filePathFromRoot
           },
-          extName === '.css' ? 'refreshcss' : 'reload'
+          extName === '.css' ? 'refreshcss' : isInjectableFile(fileName)  ? 'hot': 'reload'
         );
       }, this.debounceTimeout);
     });
@@ -171,7 +171,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     });
   }
 
-  private broadcastWs(data: any, action = 'reload') {
+  private broadcastWs(data: any, action: 'reload' | 'hot' | 'refreshcss' = 'reload') {
     if (!this.ws) return;
 
     this.ws.clients.forEach(client => {
@@ -195,7 +195,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     });
 
     this.server.on('upgrade', (request, socket, head) => {
-      if (request.url === '/_ws') {
+      if (request.url === '/_ws_lspp') {
         this.ws!.handleUpgrade(request, socket, head, ws => {
           this.ws!.emit('connection', ws, request);
         });
@@ -213,29 +213,24 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   private routesHandler(req: ILSPPIncomingMessage, res: ServerResponse) {
     const cwd = this.cwd;
+    if (!cwd) return res.end('Root Path is missing');
 
     this.applyMiddlware(req, res);
-    const file = req.file;
 
-    if (!cwd) {
-      res.end('Root Path is missing');
-    }
-    const filePath = path.join(cwd!, file!);
-
+    const file = req.file!; //file comes from one of middlware
+    const filePath = path.isAbsolute(file) ? file : path.join(cwd!, file);
     const fileStream = readFileStream(filePath);
 
-    let isFirstTime = true;
-    // res.write(isInjectableFile(filePath) ? INJECTED_TEXT : null);
-    fileStream
-      .on('data', data => {
-        if (isFirstTime)
-          res.write(isInjectableFile(filePath) ? INJECTED_TEXT : null);
-        res.write(data);
-        isFirstTime = false;
-      })
-      .on('close', () => {
-        res.end();
-      });
+    let isJustNowStreamStarted = true;
+    fileStream.on('data', data => {
+      if (isJustNowStreamStarted && isInjectableFile(filePath)) {
+        res.write(INJECTED_TEXT);
+        isJustNowStreamStarted = false;
+      }
+      res.write(data);
+    });
+
+    fileStream.on('end', () => res.end());
 
     fileStream.on('error', err => {
       console.error('ERROR ', err);
