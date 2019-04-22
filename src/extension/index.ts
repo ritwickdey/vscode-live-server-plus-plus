@@ -38,5 +38,6 @@ function getLSPPConfig(): ILiveServerPlusPlusConfig {
   LSPPconfig.port = extensionConfig.port.get();
   LSPPconfig.subpath = extensionConfig.root.get();
   LSPPconfig.debounceTimeout = extensionConfig.timeout.get();
+  LSPPconfig.indexFile = extensionConfig.indexFile.get();
   return LSPPconfig;
 }

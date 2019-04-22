@@ -18,16 +18,23 @@ import {
 import { LSPPError } from './LSPPError';
 import { urlJoin } from '../extension/utils/urlJoin';
 
+interface IWsWatcher {
+  watching: string[]; //relative paths
+  client: WebSocket;
+}
+
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port!: number;
   private cwd: string | undefined;
   private server: http.Server | undefined;
   private ws: WebSocket.Server | undefined;
+  private indexFile!: string;
   private debounceTimeout!: number;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverErrorEvent: vscode.EventEmitter<ServerErrorEvent>;
   private middlewares: IMiddlewareTypes[] = [];
+  private wsWatcherList: IWsWatcher[] = [];
 
   constructor(config: ILiveServerPlusPlusConfig) {
     this.init(config);
@@ -111,6 +118,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   private init(config: ILiveServerPlusPlusConfig) {
     this.cwd = config.cwd;
+    this.indexFile = config.indexFile || 'index.html';
     this.port = config.port || 9000;
     this.debounceTimeout = config.debounceTimeout || 400;
   }
@@ -123,13 +131,17 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       timeout = setTimeout(() => {
         const fileName = event.document.fileName;
         const extName = path.extname(fileName);
+        const isCSS = extName === '.css';
+        const isInjectabled = isInjectableFile(fileName);
+        const action = isInjectabled ? 'hot' : isCSS ? 'refreshcss' : 'reload';
+
         const filePathFromRoot = urlJoin(fileName.replace(this.cwd!, '')); // bit tricky. This will change Windows's \ to /
         this.broadcastWs(
           {
-            dom: isInjectableFile(fileName) ? event.document.getText() : undefined,
+            dom: isInjectabled ? event.document.getText() : undefined,
             fileName: filePathFromRoot
           },
-          extName === '.css' ? 'refreshcss' : isInjectableFile(fileName)  ? 'hot': 'reload'
+          action
         );
       }, this.debounceTimeout);
     });
@@ -171,15 +183,53 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     });
   }
 
-  private broadcastWs(data: any, action: 'reload' | 'hot' | 'refreshcss' = 'reload') {
+  private broadcastWs(
+    data: { dom?: string; fileName: string },
+    action: 'reload' | 'hot' | 'refreshcss' = 'reload'
+  ) {
     if (!this.ws) return;
 
-     //TODO: WE SHOULD SEND DATA TO REQURIED CLIENT
-    this.ws.clients.forEach(client => {
+    let clients: WebSocket[] = this.ws.clients as any;
+
+    //TODO: WE SHOULD WATCH ALL FILE. FOR NOW, THE LIB WORKS ONLY FOR HTML
+    if (isInjectableFile(data.fileName)) {
+      clients = this.wsWatcherList.reduce(
+        (allClients, { client, watching }) => {
+          const isConnOpen = client.readyState === WebSocket.OPEN;
+          if (isConnOpen && this.isInWatchingList(data.fileName, watching)) {
+            allClients.push(client);
+          }
+          return allClients;
+        },
+        [] as WebSocket[]
+      );
+    }
+
+    clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({ data, action }));
       }
     });
+  }
+
+  isInWatchingList(target: string, dirList: string[]) {
+    for (let i = 0; i < dirList.length; i++) {
+      let dir = dirList[i];
+
+      //TODO: THIS IS NOT THE BEST WAY. IF FOLDER CONTANTS `.`, this will not work
+      if (!path.extname(dir)) {
+        dir = urlJoin(dir, this.indexFile);
+      }
+
+      if (target.startsWith('/')) target = target.substr(1);
+      if (dir.startsWith('/')) dir = dir.substr(1);
+
+      if (dir === target) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private attachWSListeners() {
@@ -189,6 +239,13 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
     this.ws.on('connection', ws => {
       ws.send(JSON.stringify({ action: 'connected' }));
+      ws.on('message', (_data: string) => {
+        const { watchList } = JSON.parse(_data);
+        if (watchList) {
+          this.addToWsWatcherList(ws as any, watchList);
+        }
+      });
+      ws.on('close', () => this.removeFromWsWatcherList(ws as any));
     });
 
     this.ws.on('close', () => {
@@ -204,6 +261,19 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
         socket.destroy();
       }
     });
+  }
+
+  private removeFromWsWatcherList(client: WebSocket) {
+    const index = this.wsWatcherList.findIndex(e => e.client === client);
+    if (index !== -1) {
+      this.wsWatcherList.splice(index, 1);
+    }
+  }
+
+  private addToWsWatcherList(client: WebSocket, watchDirs: string | string[]) {
+    const _watchDirs = Array.isArray(watchDirs) ? watchDirs : [watchDirs];
+
+    this.wsWatcherList.push({ client, watching: _watchDirs });
   }
 
   private applyMiddlware(req: IncomingMessage, res: ServerResponse) {

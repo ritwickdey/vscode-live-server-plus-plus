@@ -1,6 +1,7 @@
 (function() {
   window.__live_server_log__ = [];
 
+  const storageKeyIsThisFirstTime = 'IsThisFirstTime_Log_From_LiveServer++';
   const { DiffDOM } = diffDOM;
   const dd = new DiffDOM({});
   const bodyRegex = /<body>*>((.|[\n\r])*)<\/body>/im; // https://stackoverflow.com/a/3642850/6120338
@@ -16,22 +17,36 @@
     const protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
     const address = protocol + window.location.host + '/_ws_lspp';
     const socket = new WebSocket(address);
+
     socket.onmessage = function(msg) {
       const res = JSON.parse(msg.data);
       if (res.action === 'refreshcss') return refreshCSS();
       if (res.action === 'reload') return fullBrowserReload();
       if (res.action === 'hot') {
         if (!res.data) return fullBrowserReload();
-        if (!isSameUrl(res.data.fileName, location.pathname)) return;
+        // if (!isSameUrl(res.data.fileName, location.pathname)) return;
         if (res.data.dom) updateDOM(res.data.dom);
       }
     };
 
-    if (!sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer++')) {
-      console.log('Live reload enabled.');
-      sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer++', true);
-    }
+    socket.onopen = event => {
+      log(event);
+      socket.send(JSON.stringify({ watchList: getWatchList() }));
+      if (!sessionStorage.getItem(storageKeyIsThisFirstTime)) {
+        console.log('Live Server++: connected!');
+        sessionStorage.setItem(storageKeyIsThisFirstTime, true);
+      }
+    };
+
+    socket.onerror = event => {
+      log(event);
+      console.log(`Live Server++: Opps! Can't able to connect.`);
+    };
   });
+
+  function getWatchList() {
+    return [window.location.pathname];
+  }
 
   function updateDOM(html) {
     tryOneOf(onDemandHTMLRender, fullHTMLRerender, fullBrowserReload)(html);
@@ -42,7 +57,6 @@
     const template = document.createElement('body');
     template.innerHTML = body;
     document.body.replaceWith(template);
-    template.style.visibility = '';
   }
 
   function onDemandHTMLRender(html) {
