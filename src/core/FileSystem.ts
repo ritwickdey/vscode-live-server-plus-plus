@@ -11,8 +11,11 @@ export const readFileStream = (filePath: string, encoding?: string) => {
   if (dirtyFile) {
     console.log('[Stream]Reading Dirty file:', filePath);
     const stream = new Readable({ encoding });
-    stream.push(dirtyFile.getText());
-    stream.push(null);
+    setImmediate(() => {
+      stream.emit('open');
+      stream.push(dirtyFile.getText());
+      stream.push(null);
+    });
     return stream;
   }
 
