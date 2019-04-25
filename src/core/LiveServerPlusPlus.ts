@@ -17,11 +17,14 @@ import {
 } from './types';
 import { LSPPError } from './LSPPError';
 import { urlJoin } from '../extension/utils/urlJoin';
+import { ReloadingTypes } from '../extension/utils/extensionConfig';
 
 interface IWsWatcher {
   watchingPaths: string[]; //relative paths
   client: WebSocket;
 }
+
+type BroadcastActions = 'hot' | 'partial-reload' | 'reload' | 'refreshcss';
 
 export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   port!: number;
@@ -30,6 +33,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private ws: WebSocket.Server | undefined;
   private indexFile!: string;
   private debounceTimeout!: number;
+  private reloadingType!: ReloadingTypes;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverErrorEvent: vscode.EventEmitter<ServerErrorEvent>;
@@ -121,6 +125,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     this.indexFile = config.indexFile || 'index.html';
     this.port = config.port || 9000;
     this.debounceTimeout = config.debounceTimeout || 400;
+    this.reloadingType = config.reloadingType || 'hot';
   }
 
   private registerOnChangeReload() {
@@ -130,21 +135,36 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         const fileName = event.document.fileName;
-        const extName = path.extname(fileName);
-        const isCSS = extName === '.css';
-        const isInjectabled = isInjectableFile(fileName);
-        const action = isInjectabled ? 'hot' : isCSS ? 'refreshcss' : 'reload';
-
+        const action = this.getReloadingActionType(fileName);
         const filePathFromRoot = urlJoin(fileName.replace(this.cwd!, '')); // bit tricky. This will change Windows's \ to /
         this.broadcastWs(
           {
-            dom: isInjectabled ? event.document.getText() : undefined,
+            dom:
+              ['hot', 'partial-reload'].indexOf(action) !== -1
+                ? event.document.getText()
+                : undefined,
             fileName: filePathFromRoot
           },
           action
         );
       }, this.debounceTimeout);
     });
+  }
+
+  private getReloadingActionType(fileName: string): BroadcastActions {
+    const extName = path.extname(fileName);
+    const isCSS = extName === '.css';
+    const isInjectable = isInjectableFile(fileName);
+
+    if (isCSS) {
+      return 'refreshcss';
+    }
+
+    if (isInjectable) {
+      return this.reloadingType;
+    }
+
+    return 'reload';
   }
 
   private listenServer() {
@@ -185,7 +205,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
 
   private broadcastWs(
     data: { dom?: string; fileName: string },
-    action: 'reload' | 'hot' | 'refreshcss' = 'reload'
+    action: BroadcastActions = 'reload'
   ) {
     if (!this.ws) return;
 

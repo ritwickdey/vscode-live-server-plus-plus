@@ -11,6 +11,7 @@ export const fileSelector = (req: ILSPPIncomingMessage, res: ServerResponse) => 
 
   if (fileUrl.startsWith('/_live-server_/')) {
     fileUrl = path.join(LIVE_SERVER_ASSETS, fileUrl.replace('/_live-server_/', ''));
+    res.setHeader('cache-control', 'public, max-age=30672000');
   } else if (fileUrl.startsWith('/')) {
     fileUrl = `.${fileUrl}`;
   }

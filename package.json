@@ -94,6 +94,16 @@
           "type": "string",
           "default": "index.html",
           "description": "Index File of server"
+        },
+        "liveServer++.reloadingType": {
+          "type": "string",
+          "default": "hot",
+          "enum": [
+            "hot",
+            "partial-reload",
+            "reload"
+          ],
+          "description": "Reloading Type.\n'hot' = Inplace DOM update[Experimental] \n 'partial-reload' = Reload DOM without refreshing page\n 'reload'= Full page reload"
         }
       }
     }
