@@ -33,7 +33,6 @@ script:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       npm dedupe;
     fi
-  - npm run lint
   - npm test --silent
   - vsce package -o LiveServer-$TRAVIS_TAG-$TRAVIS_OS_NAME.vsix
 
