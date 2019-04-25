@@ -17,7 +17,7 @@ import {
 } from './types';
 import { LSPPError } from './LSPPError';
 import { urlJoin } from '../extension/utils/urlJoin';
-import { ReloadingTypes } from '../extension/utils/extensionConfig';
+import { ReloadingStrategy } from '../extension/utils/extensionConfig';
 
 interface IWsWatcher {
   watchingPaths: string[]; //relative paths
@@ -33,7 +33,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
   private ws: WebSocket.Server | undefined;
   private indexFile!: string;
   private debounceTimeout!: number;
-  private reloadingType!: ReloadingTypes;
+  private reloadingStrategy!: ReloadingStrategy;
   private goLiveEvent: vscode.EventEmitter<GoLiveEvent>;
   private goOfflineEvent: vscode.EventEmitter<GoOfflineEvent>;
   private serverErrorEvent: vscode.EventEmitter<ServerErrorEvent>;
@@ -125,7 +125,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     this.indexFile = config.indexFile || 'index.html';
     this.port = config.port || 9000;
     this.debounceTimeout = config.debounceTimeout || 400;
-    this.reloadingType = config.reloadingType || 'hot';
+    this.reloadingStrategy = config.reloadingStrategy || 'hot';
   }
 
   private registerOnChangeReload() {
@@ -161,7 +161,7 @@ export class LiveServerPlusPlus implements ILiveServerPlusPlus {
     }
 
     if (isInjectable) {
-      return this.reloadingType;
+      return this.reloadingStrategy;
     }
 
     return 'reload';

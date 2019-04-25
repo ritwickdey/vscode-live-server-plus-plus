@@ -1,5 +1,5 @@
 import { Event } from 'vscode';
-import { ReloadingTypes } from '../../extension/utils/extensionConfig';
+import { ReloadingStrategy } from '../../extension/utils/extensionConfig';
 
 export type LSPPServerErrorCodes =
   | 'serverIsAlreadyRunning'
@@ -42,5 +42,5 @@ export interface ILiveServerPlusPlusConfig {
   subpath?: string;
   debounceTimeout?: number;
   indexFile?: string;
-  reloadingType?: ReloadingTypes;
+  reloadingStrategy?: ReloadingStrategy;
 }
