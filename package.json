@@ -12,7 +12,7 @@
     "email": "ritwickdey@outlook.com",
     "url": "https://ritwickdey.github.io"
   },
-  "icon": "./images/vscode-live-server-plus-plus.png",
+  "icon": "images/vscode-live-server-plus-plus.png",
   "categories": [
     "Other"
   ],
