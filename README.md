@@ -3,7 +3,7 @@
 </p>
 <h3 align="center">Vscode Live Server++ (BETA) </h3>
 
-----
+---
 
 ![VSCode Live Server++](./images/vscode-live-server-plus-plus_preview1.gif)
 
@@ -17,6 +17,10 @@
 - Customizable index file (e.g `index.html`)
 - Auto Browser open (Mozila, Chrome & Edge)
 - Control from statusbar
+
+## Downside
+
+- `Live Server++` will work well if your project only contents `css` & `html` and minimal `JavaScript`. If you do lot of DOM Manupulation with JavaScript, `Live Server++` is not recommended.
 
 ## How to Start/Stop Server ?
 
@@ -39,6 +43,16 @@
 ## Changelog
 
 To check full changelog [click here](CHANGELOG.md).
+
+## Why `Live Server++` when there is a `Live Server` ?
+
+Actually, I was receiving a lot of emails, PR, comments (and also there was few issue request in [#12080](https://github.com/Microsoft/vscode/issues/12080)) that - `why auto reload only happens when we save the file`? - `why it's not realtime?`... blah blah....
+
+Well, in Live Server Extension, I'm using a popular npm module (named `live-server`) and it's the core library of Live Server. _(yaa! too many "Live Server" 😜)_. In the way it's working - it never possible auto reload without saving the file.
+
+And yaa, to be honest, when I made (in mid of `2017`) the live server extension, I didn't know Node.js or JavaScript well _(Hold on! I still don't know `Node.js` but I'm now confident)_. I even didn't know `promise`/`callback` well. I understood the `callback` _(& `callback hell` too)_ while making the extension. And `Promise`? Only I knew how to use it like `.then().then().then()`. and `IIFE`? or `closure`? - I didn't even hear about those names at that time. 😬
+
+Okay, now coming to the point, Code of the `Live Server` can't be migrated with `Live Server++`. `Live Server++` is not depended on `live-server`(the npm module) - I've written the server side code from scratch & it has minimal dependency (still under development).
 
 ## LICENSE
 
