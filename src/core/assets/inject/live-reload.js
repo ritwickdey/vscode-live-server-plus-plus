@@ -20,13 +20,11 @@
 
     socket.onmessage = function(msg) {
       const res = JSON.parse(msg.data);
-      if (res.action === 'refreshcss') return refreshCSS();
-      if (res.action === 'reload') return fullBrowserReload();
-      if (res.action === 'hot') {
-        if (!res.data) return fullBrowserReload();
-        // if (!isSameUrl(res.data.fileName, location.pathname)) return;
-        if (res.data.dom) updateDOM(res.data.dom);
-      }
+      const { action, data } = res;
+      if (action === 'refreshcss') return refreshCSS();
+      if (action === 'reload') return fullBrowserReload();
+      if (action === 'hot') return updateDOM(data.dom);
+      if (action === 'partial-reload') return fullHTMLRerender(data.dom);
     };
 
     socket.onopen = event => {
@@ -116,6 +114,39 @@
           new Date().valueOf();
       }
       parent.appendChild(elem);
+    }
+  }
+
+  function refreshJS() {
+    const links = [...document.querySelectorAll('script[src]')].filter(e => {
+      if (!e.getAttribute || e.getAttribute('data-live-server-ignore')) return false;
+      const src = e.getAttribute('src') || '';
+      return !src.startsWith('http'); // Target links are local scripts
+    });
+    const body = document.querySelector('body');
+    for (let i = 0; i < links.length; ++i) {
+      const link = links[i];
+      const parent = link.parentElement || body;
+      parent.removeChild(link);
+
+      setTimeout(() => {
+        const src = link.getAttribute('src');
+        const newLink = document.createElement('script');
+        link.getAttributeNames().forEach(name => {
+          newLink.setAttribute(name, link.getAttribute(name));
+        });
+
+        if (src) {
+          var url = src.replace(/(&|\?)_cacheOverride=\d+/, '');
+          newLink.src =
+            url +
+            (url.indexOf('?') >= 0 ? '&' : '?') +
+            '_cacheOverride=' +
+            new Date().valueOf();
+        }
+
+        parent.appendChild(newLink);
+      }, 50);
     }
   }
 })();

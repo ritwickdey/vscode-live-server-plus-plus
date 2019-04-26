@@ -3,6 +3,7 @@
 import { workspace } from 'vscode';
 
 export type IBrowserList = 'default' | 'chrome' | 'firefox' | 'microsoft-edge' | null;
+export type ReloadingStrategy = 'hot' | 'partial-reload' | 'reload';
 
 export const extensionConfig = {
   port: {
@@ -24,6 +25,10 @@ export const extensionConfig = {
   indexFile: {
     get: () => getSettings<string>('indexFile'),
     set: (value: string) => setSettings('indexFile', value)
+  },
+  reloadingStrategy: {
+    get: () => getSettings<ReloadingStrategy>('reloadingStrategy'),
+    set: (value: ReloadingStrategy) => setSettings('reloadingStrategy', value)
   }
 };
 
