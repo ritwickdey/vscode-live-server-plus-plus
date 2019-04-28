@@ -94,24 +94,30 @@
 
   // THIS FUNCTION IS MODIFIED FROM `https://www.npmjs.com/package/live-server`
   function refreshCSS() {
-    var sheets = [].slice.call(document.getElementsByTagName('link'));
-    var head = document.getElementsByTagName('head')[0];
-    for (var i = 0; i < sheets.length; ++i) {
-      var elem = sheets[i];
-      var parent = elem.parentElement || head;
+    const sheets = [].slice.call(document.getElementsByTagName('link'));
+    const head = document.getElementsByTagName('head')[0];
+    for (let i = 0; i < sheets.length; ++i) {
+      const elem = sheets[i];
+
+      const href = elem.getAttribute('href');
+      if (!href || href.startsWith('http')) continue;
+
+      const parent = elem.parentElement || head;
       parent.removeChild(elem);
-      var rel = elem.rel;
+      const rel = elem.rel;
       if (
-        (elem.href && typeof rel != 'string') ||
+        (href && typeof rel != 'string') ||
         rel.length == 0 ||
         rel.toLowerCase() == 'stylesheet'
       ) {
-        var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
-        elem.href =
+        const url = href.replace(/(&|\?)_cacheOverride=\d+/, '');
+        elem.setAttribute(
+          'href',
           url +
-          (url.indexOf('?') >= 0 ? '&' : '?') +
-          '_cacheOverride=' +
-          new Date().valueOf();
+            (url.indexOf('?') >= 0 ? '&' : '?') +
+            '_cacheOverride=' +
+            new Date().valueOf()
+        );
       }
       parent.appendChild(elem);
     }
@@ -119,7 +125,8 @@
 
   function refreshJS() {
     const links = [...document.querySelectorAll('script[src]')].filter(e => {
-      if (!e.getAttribute || e.getAttribute('data-live-server-ignore')) return false;
+      if (!e.getAttribute || e.getAttribute('data-live-server-ignore'))
+        return false;
       const src = e.getAttribute('src') || '';
       return !src.startsWith('http'); // Target links are local scripts
     });
