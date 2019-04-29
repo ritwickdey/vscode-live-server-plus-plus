@@ -3,7 +3,9 @@
 
   const storageKeyIsThisFirstTime = 'IsThisFirstTime_Log_From_LiveServer++';
   const { DiffDOM } = diffDOM;
-  const dd = new DiffDOM({});
+  const dd = new DiffDOM({
+    trimNodeTextValue: true
+  });
   const bodyRegex = /<body>*>((.|[\n\r])*)<\/body>/im; // https://stackoverflow.com/a/3642850/6120338
   const log = (...args) => window.__live_server_log__.push(...args);
 
