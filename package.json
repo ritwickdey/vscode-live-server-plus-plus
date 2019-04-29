@@ -1,7 +1,7 @@
 {
   "name": "vscode-live-server-plus-plus",
   "displayName": "Live Server++",
-  "description": "It's Truly Live",
+  "description": "Static Server for your HTML CSS Project. It's Truly Live",
   "version": "0.0.1",
   "publisher": "ritwickdey",
   "engines": {

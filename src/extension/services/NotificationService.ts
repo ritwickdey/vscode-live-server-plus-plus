@@ -25,7 +25,7 @@ export class NotificationService implements ILiveServerPlusPlusService {
 
   private showServerErrorMsg(event: ServerErrorEvent) {
     if (event.code === 'serverIsAlreadyRunning') {
-      //issss! keep silent. bcz we'll open the browser with running port :D
+      //shhhh! keep silent. bcz we'll open the browser with running port :D
       return;
     }
     if (event.code === 'cwdUndefined') {
