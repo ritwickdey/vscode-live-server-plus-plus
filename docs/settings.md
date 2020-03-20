@@ -1,42 +1,42 @@
 # Settings
 
-- **`liveServer++.port`:** Customize Port Number of your Live Server++. If you want random port number, set it as `0`.
+- **`liveServer++.port`:** Customize the port number of the live server. If you want a random port number, set it to `0`.
 
   - _Default value is `5555`._
 
     <hr>
 
-- **`liveServer++.root`:** relative path from workspace.
+- **`liveServer++.root`:** The relative path from workspace.
 
   - _Example: `./sub_folder1/sub_folder2`_. Now `sub_folder2` will be root of the server.
 
-  - _Default value is "`./`".(The Workspace Root)_.
+  - _Default value is "`./`".(The workspace root)_.
 
     <hr>
 
-- **`liveServer++.browser`:** To change your system's default browser.
+- **`liveServer++.browser`:** Change the default browser the server opens in.
 
-  - _Default value is `default`. (It will open your system's default browser.)_
+  - _Default value is `default`. (It will open your favored browser.)_
   - _Available Options :_
     - `null`
     - `default`
     - `chrome`
     - `firefox`
     - `microsoft-edge`
-  - Set `null` if you don't want to open browser.
-
-  _Not enough? need more? open an/a issue/pull request on github._
+  - Set the value `null` if you don't want to open a browser.
 
    <hr>
 
-- **`liveServer++.indexFile:`** : Path to the entry point file.
+- **`liveServer++.indexFile`:** Path to the entry point file.
 
   - Default: `"index.html"`
 
    <hr>
 
-- **`liveServer++.timeout:`** : Delay before live reloading. Value in milliseconds.
+- **`liveServer++.timeout`:** Delay before the live reload. Value in milliseconds.
 
   - Default: `300`
 
     <hr>
+
+  _Want more settings? Open an issue or pull request on Github._
