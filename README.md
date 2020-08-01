@@ -20,7 +20,7 @@
 - Customizable Server Port
 - Customizable reloading time
 - Customizable index file (e.g `index.html`)
-- Auto Browser open (Mozila, Chrome & Edge)
+- Auto Browser open (Mozilla, Chrome & Edge)
 - Control from statusbar
 
 ---
