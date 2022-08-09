@@ -12,7 +12,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     if (!('WebSocket' in window)) {
       return console.error(
-        'Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.'
+        'Upgrade your browser to a modern one. This Browser does NOT support WebSockets needed for Live-Reloading.'
       );
     }
 
@@ -40,7 +40,7 @@
 
     socket.onerror = event => {
       log(event);
-      console.log(`Live Server++: Opps! Can't able to connect.`);
+      console.log(`Live Server++: Oops! Can't connect.`);
     };
   });
 
@@ -63,7 +63,7 @@
     const newBody = bodyRegex.exec(html)[0];
     const diff = dd.diff(document.body, newBody);
     const result = dd.apply(document.body, diff);
-    if (!result) throw "Can't able to update DOM";
+    if (!result) throw "Can't update the DOM";
   }
 
   function fullBrowserReload() {
